@@ -37,3 +37,6 @@ Thumbs.db
 # Coverage
 .coverage
 htmlcov/
+
+# Superpowers brainstorm session files (visual companion mockups)
+.superpowers/

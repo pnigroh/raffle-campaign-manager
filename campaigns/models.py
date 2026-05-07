@@ -56,6 +56,22 @@ class Prize(models.Model):
         return f"{self.name} ({self.campaign.name})"
 
 
+class Store(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Inactive stores are hidden from the public submission form."
+    )
+    order = models.PositiveIntegerField(default=0, help_text="Lower values appear first.")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return self.name
+
+
 class SubmissionCode(models.Model):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='submission_codes')
     code = models.CharField(max_length=100)
@@ -82,6 +98,13 @@ class Submission(models.Model):
     county = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
     email = models.EmailField()
+    store = models.ForeignKey(
+        Store, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='submissions',
+        help_text="Store where the customer made their qualifying purchase."
+    )
+    image_1 = models.ImageField(upload_to='submissions/%Y/%m/', blank=True, null=True)
+    image_2 = models.ImageField(upload_to='submissions/%Y/%m/', blank=True, null=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
 

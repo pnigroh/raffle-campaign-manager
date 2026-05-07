@@ -1,0 +1,803 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ campaign.name }} — Win Big</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" crossorigin="anonymous">
+
+  <style>
+    :root {
+      --primary: #E11D48;
+      --primary-deep: #9F1239;
+      --accent: #2563EB;
+      --accent-deep: #1E3A8A;
+      --bolt: #FACC15;
+      --ink: #0F172A;
+      --ink-2: #1E293B;
+      --paper: #FFFFFF;
+      --paper-2: #FFF7F8;
+      --line: #FECDD3;
+      --line-2: #E2E8F0;
+      --muted: #64748B;
+      --danger: #DC2626;
+      --radius: 14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--ink);
+      background: var(--paper-2);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .display { font-family: 'Righteous', system-ui, sans-serif; letter-spacing: 0.005em; }
+
+    .marquee {
+      display: flex;
+      gap: 36px;
+      align-items: center;
+      padding: 10px 0;
+      font-family: 'Righteous', sans-serif;
+      font-size: 0.95rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--paper);
+      background: var(--ink);
+      border-bottom: 4px solid var(--bolt);
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .marquee span { display: flex; align-items: center; gap: 24px; animation: scroll 36s linear infinite; }
+    .marquee span::after { content: '★'; color: var(--bolt); font-size: 0.7rem; }
+
+    @keyframes scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Righteous', sans-serif;
+      font-size: 1.25rem;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      box-shadow: 4px 4px 0 0 var(--ink);
+    }
+
+    .brand-mark svg { width: 18px; height: 18px; color: #fff; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      font-family: 'Righteous', sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--paper);
+      background: var(--ink);
+      border-radius: 999px;
+      border: 3px solid var(--ink);
+    }
+
+    .badge.live { background: var(--primary); }
+    .badge.live::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--bolt); animation: blink 1.6s ease-in-out infinite; }
+    .badge.closed { background: var(--ink); color: var(--paper); }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+    .hero {
+      position: relative;
+      padding: 36px 24px 0;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      align-items: center;
+    }
+
+    @media (min-width: 920px) {
+      .hero-grid { grid-template-columns: 1.4fr 1fr; gap: 40px; }
+    }
+
+    .hero-title {
+      font-family: 'Righteous', sans-serif;
+      font-size: clamp(2.6rem, 8vw, 5rem);
+      line-height: 0.94;
+      letter-spacing: 0.005em;
+      margin: 16px 0 18px;
+      color: var(--ink);
+    }
+
+    .hero-title .accent-rose { color: var(--primary); }
+    .hero-title .accent-blue { color: var(--accent); }
+    .hero-title .accent-bolt {
+      display: inline-block;
+      padding: 0 14px;
+      background: var(--bolt);
+      transform: rotate(-2deg);
+      box-shadow: 6px 6px 0 var(--ink);
+    }
+
+    .hero-desc {
+      font-size: 1.05rem;
+      color: var(--ink-2);
+      max-width: 50ch;
+      margin: 0 0 22px;
+    }
+
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .stat {
+      padding: 10px 16px;
+      background: var(--paper);
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      box-shadow: 4px 4px 0 0 var(--ink);
+      font-weight: 700;
+      font-size: 0.86rem;
+    }
+
+    .stat strong { display: block; font-family: 'Righteous', sans-serif; font-size: 1.4rem; color: var(--primary); }
+
+    .prize-card {
+      position: relative;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+      color: var(--paper);
+      border: 4px solid var(--ink);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 10px 10px 0 0 var(--ink);
+      transform: rotate(1.2deg);
+    }
+
+    .prize-card::before {
+      content: '';
+      position: absolute;
+      top: -16px; left: -16px;
+      width: 64px; height: 64px;
+      background: var(--bolt);
+      border: 4px solid var(--ink);
+      border-radius: 50%;
+      box-shadow: 4px 4px 0 var(--ink);
+      display: grid;
+      place-items: center;
+    }
+
+    .prize-card-eyebrow {
+      font-family: 'Righteous', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      opacity: 0.8;
+      margin-bottom: 8px;
+    }
+
+    .prize-card-title {
+      font-family: 'Righteous', sans-serif;
+      font-size: 1.7rem;
+      line-height: 1.05;
+      margin: 0 0 12px;
+    }
+
+    .prize-list {
+      list-style: none;
+      padding: 0;
+      margin: 16px 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .prize-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+
+    .prize-list li::before {
+      content: counter(prize);
+      counter-increment: prize;
+      width: 28px;
+      height: 28px;
+      background: var(--bolt);
+      color: var(--ink);
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-family: 'Righteous', sans-serif;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .prize-list { counter-reset: prize; }
+
+    .form-section {
+      max-width: 760px;
+      margin: 56px auto 0;
+      padding: 0 24px 80px;
+    }
+
+    .form-card {
+      position: relative;
+      background: var(--paper);
+      border: 4px solid var(--ink);
+      border-radius: 24px;
+      padding: 36px 28px;
+      box-shadow: 12px 12px 0 0 var(--primary);
+    }
+
+    @media (min-width: 720px) { .form-card { padding: 44px 40px; } }
+
+    .form-tag {
+      position: absolute;
+      top: -18px;
+      left: 28px;
+      padding: 8px 18px;
+      background: var(--bolt);
+      border: 3px solid var(--ink);
+      border-radius: 999px;
+      font-family: 'Righteous', sans-serif;
+      font-size: 0.86rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink);
+      transform: rotate(-2deg);
+    }
+
+    .form-title {
+      font-family: 'Righteous', sans-serif;
+      font-size: clamp(1.8rem, 5vw, 2.4rem);
+      line-height: 1.05;
+      margin: 8px 0 8px;
+    }
+
+    .form-title em { font-style: normal; color: var(--primary); }
+
+    .form-sub {
+      color: var(--ink-2);
+      margin: 0 0 28px;
+      font-size: 1rem;
+    }
+
+    .form-step-title {
+      font-family: 'Righteous', sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 24px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .form-step-title::before {
+      content: counter(step, decimal-leading-zero);
+      counter-increment: step;
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      color: var(--paper);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 0.78rem;
+    }
+
+    .form-card { counter-reset: step; }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    @media (min-width: 540px) { .row-2 { grid-template-columns: 1fr 1fr; gap: 18px; } }
+
+    .field { margin-bottom: 12px; }
+
+    .label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--ink-2);
+      margin-bottom: 6px;
+    }
+
+    .input, .select {
+      display: block;
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 1rem;
+      color: var(--ink);
+      background: var(--paper);
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+    }
+
+    .input::placeholder { color: var(--muted); }
+
+    .input:hover, .select:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+
+    .input:focus, .select:focus {
+      outline: none;
+      border-color: var(--primary);
+      transform: translate(-2px, -2px);
+      box-shadow: 4px 4px 0 var(--primary);
+    }
+
+    .input.is-invalid, .select.is-invalid {
+      border-color: var(--danger);
+      box-shadow: 4px 4px 0 var(--danger);
+    }
+
+    .select {
+      appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='%230F172A' d='M3 6l5 5 5-5z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 38px;
+    }
+
+    .invalid-feedback {
+      display: block;
+      margin-top: 6px;
+      color: var(--danger);
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+
+    .file-input {
+      display: block;
+      width: 100%;
+      min-height: 48px;
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: var(--ink-2);
+      background: var(--paper);
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+    .file-input:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--ink); }
+    .file-input:focus { outline: none; transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--accent); }
+    .file-input.is-invalid { box-shadow: 4px 4px 0 var(--danger); border-color: var(--danger); }
+    .file-input::file-selector-button {
+      margin-right: 14px;
+      padding: 8px 14px;
+      border: 2px solid var(--ink);
+      border-radius: 8px;
+      background: var(--bolt);
+      color: var(--ink);
+      font-family: 'Righteous', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 120ms ease;
+    }
+    .file-input::file-selector-button:hover { background: var(--primary); color: var(--paper); }
+    .file-hint { font-size: 0.78rem; color: var(--muted); margin-top: 6px; font-weight: 500; }
+
+    .code-block {
+      margin-top: 20px;
+      padding: 22px;
+      background: var(--bolt);
+      border: 3px solid var(--ink);
+      border-radius: 18px;
+      box-shadow: 6px 6px 0 var(--ink);
+    }
+
+    .code-block-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .code-emoji {
+      width: 44px;
+      height: 44px;
+      background: var(--ink);
+      color: var(--bolt);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+    }
+
+    .code-block-title {
+      font-family: 'Righteous', sans-serif;
+      font-size: 1.05rem;
+      letter-spacing: 0.02em;
+    }
+
+    .pill-tag {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 3px 10px;
+      font-family: 'Righteous', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--paper);
+      background: var(--primary);
+      border-radius: 999px;
+    }
+
+    .pill-tag.optional { background: var(--ink-2); }
+
+    .code-help {
+      font-size: 0.88rem;
+      color: var(--ink);
+      margin: 0 0 12px;
+      font-weight: 500;
+    }
+
+    .alert {
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      margin-bottom: 16px;
+      border: 3px solid var(--ink);
+      background: #FEE2E2;
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .submit {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      min-height: 60px;
+      margin-top: 30px;
+      padding: 18px 26px;
+      font-family: 'Righteous', sans-serif;
+      font-size: 1.15rem;
+      letter-spacing: 0.06em;
+      color: var(--paper);
+      background: var(--primary);
+      border: 4px solid var(--ink);
+      border-radius: 16px;
+      box-shadow: 8px 8px 0 var(--ink);
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+
+    .submit:hover {
+      transform: translate(-3px, -3px);
+      box-shadow: 11px 11px 0 var(--ink);
+      background: #BE123C;
+    }
+    .submit:active { transform: translate(2px, 2px); box-shadow: 4px 4px 0 var(--ink); }
+    .submit:focus-visible { outline: 4px solid var(--accent); outline-offset: 4px; }
+
+    .legal {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+
+    .closed-state {
+      padding: 60px 28px;
+      text-align: center;
+    }
+
+    .closed-state-icon {
+      width: 96px; height: 96px;
+      margin: 0 auto 18px;
+      background: var(--bolt);
+      border: 4px solid var(--ink);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      box-shadow: 6px 6px 0 var(--ink);
+      transform: rotate(-3deg);
+    }
+
+    .closed-state h3 { font-family: 'Righteous', sans-serif; font-size: 2rem; margin: 0 0 8px; }
+    .closed-state p { color: var(--ink-2); margin: 0; }
+
+    .footer {
+      padding: 16px 24px;
+      text-align: center;
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--paper);
+      background: var(--ink);
+    }
+
+    .footer span { color: var(--bolt); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .marquee span { animation: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="marquee" aria-hidden="true">
+  <span>
+    Win a motorbike · {{ campaign.prizes.count }} prizes up for grabs · Free entry · Drawing soon · Win a motorbike · {{ campaign.prizes.count }} prizes up for grabs · Free entry · Drawing soon ·
+  </span>
+  <span>
+    Win a motorbike · {{ campaign.prizes.count }} prizes up for grabs · Free entry · Drawing soon · Win a motorbike · {{ campaign.prizes.count }} prizes up for grabs · Free entry · Drawing soon ·
+  </span>
+</div>
+
+<div class="header-bar">
+  <a class="brand" href="#">
+    <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm14 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM7 14h6l4-7h-3l-2 4h-3l-2 3Z"/></svg></span>
+    RaffleManager
+  </a>
+  {% if campaign_open %}
+    <span class="badge live">LIVE NOW</span>
+  {% else %}
+    <span class="badge closed">CLOSED</span>
+  {% endif %}
+</div>
+
+<section class="hero">
+  <div class="hero-grid">
+    <div>
+      <div style="font-family:'Righteous',sans-serif; font-size:0.86rem; letter-spacing:0.18em; text-transform:uppercase; color: var(--accent);">
+        Sweepstakes &mdash; {{ campaign.start_date|date:"M Y" }}
+      </div>
+      <h1 class="hero-title">
+        Ride <span class="accent-rose">free</span>.<br>
+        Win the <span class="accent-bolt">bike</span><br>
+        of your <span class="accent-blue">life</span>.
+      </h1>
+      <p class="hero-desc">{{ campaign.description|default:"Three legendary motorcycles. One winning ticket each. Enter your details below to lock in your shot." }}</p>
+      <div class="stats">
+        <div class="stat"><strong>{{ campaign.prizes.count }}</strong> Prizes</div>
+        <div class="stat"><strong>{{ campaign.end_date|date:"M d" }}</strong> Drawing</div>
+        <div class="stat"><strong>FREE</strong> Entry</div>
+      </div>
+    </div>
+
+    <aside class="prize-card" aria-label="Prizes on offer">
+      <div class="prize-card-eyebrow">The Lineup</div>
+      <h2 class="prize-card-title">Three machines.<br>Three winners.</h2>
+      <ul class="prize-list">
+        {% for prize in campaign.prizes.all %}
+          <li>{{ prize.name }}</li>
+        {% empty %}
+          <li>Prize details coming soon.</li>
+        {% endfor %}
+      </ul>
+    </aside>
+  </div>
+</section>
+
+<section class="form-section">
+  <div class="form-card">
+    <span class="form-tag">Enter Now</span>
+
+    {% if not campaign_open %}
+      <div class="closed-state">
+        <div class="closed-state-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+        <h3>This contest is closed</h3>
+        <p>The entry window for <strong>{{ campaign.name }}</strong> has ended. Thanks for stopping by!</p>
+      </div>
+    {% else %}
+
+      <h2 class="form-title">Lock in your <em>shot</em>.</h2>
+      <p class="form-sub">Six fields, less than a minute, then you're in. Good luck!</p>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <div class="form-step-title">Who you are</div>
+        <div class="row-2">
+          <div class="field">
+            <label class="label" for="id_first_name">First name</label>
+            <input type="text" id="id_first_name" name="first_name" autocomplete="given-name"
+              class="input {% if form.first_name.errors %}is-invalid{% endif %}"
+              placeholder="James"
+              value="{{ form.first_name.value|default:'' }}" required>
+            {% if form.first_name.errors %}<div class="invalid-feedback">{{ form.first_name.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="field">
+            <label class="label" for="id_last_name">Last name</label>
+            <input type="text" id="id_last_name" name="last_name" autocomplete="family-name"
+              class="input {% if form.last_name.errors %}is-invalid{% endif %}"
+              placeholder="Hunt"
+              value="{{ form.last_name.value|default:'' }}" required>
+            {% if form.last_name.errors %}<div class="invalid-feedback">{{ form.last_name.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="form-step-title">Where you're from</div>
+        <div class="row-2">
+          <div class="field">
+            <label class="label" for="id_state">State</label>
+            <select id="id_state" name="state" autocomplete="address-level1"
+              class="select {% if form.state.errors %}is-invalid{% endif %}" required>
+              {% for val, lbl in form.fields.state.choices %}
+                <option value="{{ val }}" {% if form.state.value == val %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+            {% if form.state.errors %}<div class="invalid-feedback">{{ form.state.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="field">
+            <label class="label" for="id_county">County</label>
+            <input type="text" id="id_county" name="county" autocomplete="address-level2"
+              class="input {% if form.county.errors %}is-invalid{% endif %}"
+              placeholder="Orange"
+              value="{{ form.county.value|default:'' }}" required>
+            {% if form.county.errors %}<div class="invalid-feedback">{{ form.county.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="form-step-title">How we reach you</div>
+        <div class="row-2">
+          <div class="field">
+            <label class="label" for="id_phone">Phone</label>
+            <input type="tel" id="id_phone" name="phone" autocomplete="tel"
+              class="input {% if form.phone.errors %}is-invalid{% endif %}"
+              placeholder="(555) 010-0199"
+              value="{{ form.phone.value|default:'' }}" required>
+            {% if form.phone.errors %}<div class="invalid-feedback">{{ form.phone.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="field">
+            <label class="label" for="id_email">Email</label>
+            <input type="email" id="id_email" name="email" autocomplete="email"
+              class="input {% if form.email.errors %}is-invalid{% endif %}"
+              placeholder="you@example.com"
+              value="{{ form.email.value|default:'' }}" required>
+            {% if form.email.errors %}<div class="invalid-feedback">{{ form.email.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="form-step-title">Where you bought</div>
+        <div class="field">
+          <label class="label" for="id_store">Store</label>
+          <select id="id_store" name="store"
+            class="select {% if form.store.errors %}is-invalid{% endif %}">
+            {% for val, lbl in form.fields.store.choices %}
+              <option value="{{ val }}" {% if form.store.value|stringformat:'s' == val|stringformat:'s' %}selected{% endif %}>{{ lbl }}</option>
+            {% endfor %}
+          </select>
+          {% if form.store.errors %}<div class="invalid-feedback">{{ form.store.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label class="label" for="id_image_1">Receipt / photo 1</label>
+            <input type="file" id="id_image_1" name="image_1" accept="image/*"
+              class="file-input {% if form.image_1.errors %}is-invalid{% endif %}">
+            <div class="file-hint">JPG or PNG &middot; up to 10MB</div>
+            {% if form.image_1.errors %}<div class="invalid-feedback">{{ form.image_1.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="field">
+            <label class="label" for="id_image_2">Product / photo 2</label>
+            <input type="file" id="id_image_2" name="image_2" accept="image/*"
+              class="file-input {% if form.image_2.errors %}is-invalid{% endif %}">
+            <div class="file-hint">JPG or PNG &middot; up to 10MB</div>
+            {% if form.image_2.errors %}<div class="invalid-feedback">{{ form.image_2.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-row">
+            <div class="code-emoji">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div class="code-block-title">
+              Submission Code
+              {% if campaign.validate_submission_code %}
+                <span class="pill-tag">Required</span>
+              {% else %}
+                <span class="pill-tag optional">Optional</span>
+              {% endif %}
+            </div>
+          </div>
+          <p class="code-help">
+            {% if campaign.validate_submission_code %}
+              Pop in the code from your purchase to lock in your entry.
+            {% else %}
+              Got a code? Drop it in. No code? Skip it.
+            {% endif %}
+          </p>
+          <input type="text" id="id_submission_code_input" name="submission_code_input"
+            autocomplete="off" autocapitalize="characters" spellcheck="false"
+            class="input {% if form.submission_code_input.errors %}is-invalid{% endif %}"
+            placeholder="K7XQ9P3M2N"
+            value="{{ form.submission_code_input.value|default:'' }}"
+            {% if campaign.validate_submission_code %}required{% endif %}>
+          {% if form.submission_code_input.errors %}<div class="invalid-feedback">{{ form.submission_code_input.errors.0 }}</div>{% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+          <div class="alert" style="margin-top: 18px;">
+            {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+          </div>
+        {% endif %}
+
+        <button class="submit" type="submit">
+          I'M IN — DRAW ME!
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+
+        <p class="legal">Your data stays private &mdash; we only use it for the raffle drawing.</p>
+      </form>
+    {% endif %}
+  </div>
+</section>
+
+<footer class="footer">
+  &copy; {{ campaign.name }} &middot; Powered by <span>RaffleManager</span>
+</footer>
+
+</body>
+</html>

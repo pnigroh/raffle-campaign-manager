@@ -175,6 +175,11 @@ UNFOLD = {
                         "icon": "how_to_reg",
                         "link": reverse_lazy("admin:campaigns_submission_changelist"),
                     },
+                    {
+                        "title": "Stores",
+                        "icon": "storefront",
+                        "link": reverse_lazy("admin:campaigns_store_changelist"),
+                    },
                 ],
             },
             {

@@ -1,6 +1,6 @@
 from django import forms
 from django.utils import timezone
-from .models import Campaign, Prize, Submission, SubmissionCode
+from .models import Campaign, Prize, Submission, SubmissionCode, Store
 
 US_STATES = [
     ('', '-- Select State --'),
@@ -28,10 +28,17 @@ class SubmissionForm(forms.ModelForm):
         label="Submission Code",
         widget=forms.TextInput(attrs={'placeholder': 'Enter your submission code'})
     )
+    store = forms.ModelChoiceField(
+        queryset=Store.objects.filter(is_active=True),
+        required=False,
+        empty_label="-- Select Store --",
+        label="Store"
+    )
 
     class Meta:
         model = Submission
-        fields = ['first_name', 'last_name', 'state', 'county', 'phone', 'email']
+        fields = ['first_name', 'last_name', 'state', 'county', 'phone', 'email',
+                  'store', 'image_1', 'image_2']
         widgets = {
             'first_name': forms.TextInput(attrs={'placeholder': 'First Name'}),
             'last_name': forms.TextInput(attrs={'placeholder': 'Last Name'}),

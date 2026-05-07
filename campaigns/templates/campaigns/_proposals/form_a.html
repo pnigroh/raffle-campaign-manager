@@ -1,0 +1,806 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ campaign.name }} — Enter to Win</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" crossorigin="anonymous">
+
+  <style>
+    :root {
+      --bg-0: #050608;
+      --bg-1: #0B0E13;
+      --bg-2: #11141B;
+      --line: rgba(255,255,255,0.08);
+      --text: #F4F5F7;
+      --text-dim: #9099A8;
+      --text-mute: #5A6473;
+      --primary: #1E293B;
+      --accent: #DC2626;
+      --accent-glow: rgba(220,38,38,0.45);
+      --success: #34D399;
+      --danger: #F87171;
+      --radius: 14px;
+      --radius-lg: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--text);
+      background: var(--bg-0);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.005em;
+    }
+
+    .scene {
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .scene::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(60vw 60vw at 80% -10%, rgba(220,38,38,0.18), transparent 60%),
+        radial-gradient(70vw 70vw at -10% 110%, rgba(56,89,165,0.18), transparent 55%),
+        linear-gradient(180deg, #0A0D14 0%, #050608 50%, #0A0D14 100%);
+      z-index: -2;
+    }
+
+    .scene::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .nav {
+      position: relative;
+      z-index: 10;
+      padding: 22px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), #7F1D1D);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+
+    .brand-mark svg { width: 16px; height: 16px; }
+
+    .nav-meta {
+      font-family: 'Inter', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+      display: none;
+    }
+
+    @media (min-width: 720px) { .nav-meta { display: block; } }
+
+    .hero {
+      position: relative;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 8px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 0 4px rgba(52,211,153,0.18);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+
+    .pill.closed .pill-dot {
+      background: var(--danger);
+      box-shadow: 0 0 0 4px rgba(248,113,113,0.18);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.55; transform: scale(0.86); }
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 6.5vw, 3.6rem);
+      font-weight: 900;
+      line-height: 1.02;
+      letter-spacing: -0.035em;
+      margin: 18px 0 14px;
+      max-width: 14ch;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--accent) 0%, #FB7185 60%, #FCD34D 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero .desc {
+      max-width: 56ch;
+      color: var(--text-dim);
+      font-size: 1.02rem;
+      line-height: 1.65;
+    }
+
+    .hero-meta {
+      margin-top: 22px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+    }
+
+    .hero-meta span strong {
+      display: block;
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: none;
+      margin-top: 3px;
+    }
+
+    .layout {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 36px 24px 80px;
+      display: grid;
+      gap: 28px;
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 980px) {
+      .layout { grid-template-columns: 1.05fr 1fr; gap: 36px; align-items: start; }
+    }
+
+    .glass {
+      position: relative;
+      background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      overflow: hidden;
+    }
+
+    .glass::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(120% 60% at 0% 0%, rgba(255,255,255,0.08), transparent 60%);
+    }
+
+    .prizes-card { padding: 28px; }
+
+    .section-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+      font-weight: 700;
+      margin: 0 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-eyebrow::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    .prize {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .prize:last-child { border-bottom: 0; }
+
+    .prize-num {
+      font-family: 'Inter', monospace;
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .prize-name {
+      font-weight: 700;
+      font-size: 1.02rem;
+      letter-spacing: -0.01em;
+      margin-bottom: 3px;
+    }
+
+    .prize-desc {
+      color: var(--text-dim);
+      font-size: 0.88rem;
+      line-height: 1.55;
+    }
+
+    .form-card { padding: 28px; }
+
+    .form-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .form-head h2 {
+      margin: 0 0 4px;
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .form-head p {
+      margin: 0;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    .step-counter {
+      font-family: 'Inter', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+      white-space: nowrap;
+    }
+
+    .field { margin-bottom: 16px; }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 520px) { .row-2 { grid-template-columns: 1fr 1fr; gap: 14px; } }
+
+    .label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .input, .select {
+      display: block;
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 14px;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+      transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .input::placeholder { color: #4A5363; }
+
+    .input:hover, .select:hover { border-color: rgba(255,255,255,0.18); }
+
+    .input:focus, .select:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(220,38,38,0.06);
+      box-shadow: 0 0 0 4px rgba(220,38,38,0.18);
+    }
+
+    .input.is-invalid, .select.is-invalid {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 4px rgba(248,113,113,0.16);
+    }
+
+    .select {
+      appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='%239099A8' d='M3 6l5 5 5-5z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 38px;
+    }
+
+    .select option { background: #11141B; color: var(--text); }
+
+    .invalid-feedback {
+      display: block;
+      margin-top: 6px;
+      color: var(--danger);
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+
+    .file-input {
+      display: block;
+      width: 100%;
+      min-height: 48px;
+      padding: 10px 14px;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: var(--radius);
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+    .file-input:hover { border-color: rgba(255,255,255,0.18); }
+    .file-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(220,38,38,0.18); }
+    .file-input.is-invalid { border-color: var(--danger); }
+    .file-input::file-selector-button {
+      margin-right: 14px;
+      padding: 7px 14px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 120ms ease;
+    }
+    .file-input::file-selector-button:hover { background: var(--accent); border-color: var(--accent); }
+    .file-hint { font-size: 0.75rem; color: var(--text-mute); margin-top: 6px; }
+
+    .code-block {
+      margin-top: 22px;
+      padding: 18px;
+      border: 1px dashed rgba(220,38,38,0.4);
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(220,38,38,0.07), rgba(220,38,38,0.01));
+    }
+
+    .code-block-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .code-block-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #7F1D1D);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 6px 18px rgba(220,38,38,0.35);
+    }
+
+    .code-block-icon svg { width: 18px; height: 18px; color: #fff; }
+
+    .code-block-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .code-block-tag {
+      font-family: 'Inter', monospace;
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--accent);
+      color: #fff;
+      margin-left: 6px;
+    }
+
+    .code-block-tag.optional { background: rgba(255,255,255,0.08); color: var(--text-dim); }
+
+    .code-block-help {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      margin: 0 0 12px;
+    }
+
+    .alert {
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+      border: 1px solid;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .alert-danger {
+      background: rgba(248,113,113,0.08);
+      border-color: rgba(248,113,113,0.3);
+      color: #FCA5A5;
+    }
+
+    .submit {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 56px;
+      margin-top: 24px;
+      padding: 16px 22px;
+      border: 0;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #fff;
+      background: linear-gradient(135deg, #DC2626, #991B1B);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.18) inset,
+        0 14px 30px -10px var(--accent-glow);
+      transition: transform 160ms ease, box-shadow 160ms ease;
+      overflow: hidden;
+    }
+
+    .submit::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.18) 50%, transparent 100%);
+      transform: translateX(-100%);
+      transition: transform 600ms ease;
+    }
+
+    .submit:hover { transform: translateY(-1px); box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 22px 36px -10px var(--accent-glow); }
+    .submit:hover::after { transform: translateX(100%); }
+    .submit:focus-visible { outline: 3px solid #FCD34D; outline-offset: 3px; }
+
+    .legal {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-mute);
+    }
+
+    .closed-state {
+      padding: 56px 24px;
+      text-align: center;
+    }
+
+    .closed-state-icon {
+      width: 76px; height: 76px;
+      margin: 0 auto 18px;
+      border-radius: 999px;
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.25);
+      display: grid;
+      place-items: center;
+      color: var(--danger);
+    }
+
+    .closed-state h3 { font-size: 1.4rem; font-weight: 800; margin: 0 0 8px; }
+    .closed-state p { color: var(--text-dim); margin: 0; }
+
+    .footer {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 48px;
+      text-align: center;
+      color: var(--text-mute);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="scene">
+
+  <nav class="nav">
+    <a class="brand" href="#">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm14 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM7 14h6l4-7h-3l-2 4h-3l-2 3Z"/></svg>
+      </span>
+      RaffleManager
+    </a>
+    <span class="nav-meta">PROPOSAL · A — ADRENALINE PREMIUM</span>
+  </nav>
+
+  <header class="hero">
+    {% if campaign_open %}
+      <span class="pill"><span class="pill-dot"></span> Campaign Live</span>
+    {% else %}
+      <span class="pill closed"><span class="pill-dot"></span> Campaign Closed</span>
+    {% endif %}
+
+    <h1>{{ campaign.name|default:"Win the bike of a lifetime" }} <em>—</em></h1>
+    {% if campaign.description %}
+      <p class="desc">{{ campaign.description }}</p>
+    {% endif %}
+
+    <div class="hero-meta">
+      <span>Window<strong>{{ campaign.start_date|date:"M d" }} → {{ campaign.end_date|date:"M d, Y" }}</strong></span>
+      <span>Prizes<strong>{{ campaign.prizes.count }} machines</strong></span>
+      <span>Entry<strong>One per email</strong></span>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <aside class="glass prizes-card" aria-label="Prizes on offer">
+      <h2 class="section-eyebrow">The lineup</h2>
+      {% for prize in campaign.prizes.all %}
+        <article class="prize">
+          <div class="prize-num">0{{ forloop.counter }}</div>
+          <div>
+            <div class="prize-name">{{ prize.name }}</div>
+            <div class="prize-desc">{{ prize.description }}</div>
+          </div>
+        </article>
+      {% empty %}
+        <p class="prize-desc">Prize details coming soon.</p>
+      {% endfor %}
+    </aside>
+
+    <section class="glass form-card">
+
+      {% if not campaign_open %}
+        <div class="closed-state">
+          <div class="closed-state-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <h3>This Campaign is Closed</h3>
+          <p>The entry window for <strong>{{ campaign.name }}</strong> has ended. Thank you for your interest!</p>
+        </div>
+      {% else %}
+
+        <header class="form-head">
+          <div>
+            <h2>Claim your entry</h2>
+            <p>Six fields. Less than a minute. Good luck.</p>
+          </div>
+          <span class="step-counter">01 / ENTRY</span>
+        </header>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-danger">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <span>{{ message }}</span>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          <div class="row-2 field">
+            <div>
+              <label class="label" for="id_first_name">First Name</label>
+              <input type="text" id="id_first_name" name="first_name" autocomplete="given-name"
+                class="input {% if form.first_name.errors %}is-invalid{% endif %}"
+                placeholder="James"
+                value="{{ form.first_name.value|default:'' }}" required>
+              {% if form.first_name.errors %}<div class="invalid-feedback">{{ form.first_name.errors.0 }}</div>{% endif %}
+            </div>
+            <div>
+              <label class="label" for="id_last_name">Last Name</label>
+              <input type="text" id="id_last_name" name="last_name" autocomplete="family-name"
+                class="input {% if form.last_name.errors %}is-invalid{% endif %}"
+                placeholder="Hunt"
+                value="{{ form.last_name.value|default:'' }}" required>
+              {% if form.last_name.errors %}<div class="invalid-feedback">{{ form.last_name.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="row-2 field">
+            <div>
+              <label class="label" for="id_state">State</label>
+              <select id="id_state" name="state" autocomplete="address-level1"
+                class="select {% if form.state.errors %}is-invalid{% endif %}" required>
+                {% for val, lbl in form.fields.state.choices %}
+                  <option value="{{ val }}" {% if form.state.value == val %}selected{% endif %}>{{ lbl }}</option>
+                {% endfor %}
+              </select>
+              {% if form.state.errors %}<div class="invalid-feedback">{{ form.state.errors.0 }}</div>{% endif %}
+            </div>
+            <div>
+              <label class="label" for="id_county">County</label>
+              <input type="text" id="id_county" name="county" autocomplete="address-level2"
+                class="input {% if form.county.errors %}is-invalid{% endif %}"
+                placeholder="Los Angeles"
+                value="{{ form.county.value|default:'' }}" required>
+              {% if form.county.errors %}<div class="invalid-feedback">{{ form.county.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="row-2 field">
+            <div>
+              <label class="label" for="id_phone">Phone</label>
+              <input type="tel" id="id_phone" name="phone" autocomplete="tel"
+                class="input {% if form.phone.errors %}is-invalid{% endif %}"
+                placeholder="(555) 010-0199"
+                value="{{ form.phone.value|default:'' }}" required>
+              {% if form.phone.errors %}<div class="invalid-feedback">{{ form.phone.errors.0 }}</div>{% endif %}
+            </div>
+            <div>
+              <label class="label" for="id_email">Email</label>
+              <input type="email" id="id_email" name="email" autocomplete="email"
+                class="input {% if form.email.errors %}is-invalid{% endif %}"
+                placeholder="you@example.com"
+                value="{{ form.email.value|default:'' }}" required>
+              {% if form.email.errors %}<div class="invalid-feedback">{{ form.email.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="field" style="margin-top: 22px;">
+            <label class="label" for="id_store">Where you bought</label>
+            <select id="id_store" name="store"
+              class="select {% if form.store.errors %}is-invalid{% endif %}">
+              {% for val, lbl in form.fields.store.choices %}
+                <option value="{{ val }}" {% if form.store.value|stringformat:'s' == val|stringformat:'s' %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+            {% if form.store.errors %}<div class="invalid-feedback">{{ form.store.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="row-2 field">
+            <div>
+              <label class="label" for="id_image_1">Receipt / Image 1</label>
+              <input type="file" id="id_image_1" name="image_1" accept="image/*"
+                class="file-input {% if form.image_1.errors %}is-invalid{% endif %}">
+              <div class="file-hint">JPG, PNG · up to 10MB</div>
+              {% if form.image_1.errors %}<div class="invalid-feedback">{{ form.image_1.errors.0 }}</div>{% endif %}
+            </div>
+            <div>
+              <label class="label" for="id_image_2">Product / Image 2</label>
+              <input type="file" id="id_image_2" name="image_2" accept="image/*"
+                class="file-input {% if form.image_2.errors %}is-invalid{% endif %}">
+              <div class="file-hint">JPG, PNG · up to 10MB</div>
+              {% if form.image_2.errors %}<div class="invalid-feedback">{{ form.image_2.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="code-block">
+            <div class="code-block-head">
+              <span class="code-block-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3z M19 19h2v2h-2z"/></svg>
+              </span>
+              <div class="code-block-title">
+                Submission Code
+                {% if campaign.validate_submission_code %}
+                  <span class="code-block-tag">Required</span>
+                {% else %}
+                  <span class="code-block-tag optional">Optional</span>
+                {% endif %}
+              </div>
+            </div>
+            <p class="code-block-help">
+              {% if campaign.validate_submission_code %}
+                You must enter a valid code from your purchase confirmation.
+              {% else %}
+                Enter your code if you received one with your purchase.
+              {% endif %}
+            </p>
+            <input type="text" id="id_submission_code_input" name="submission_code_input"
+              autocomplete="off" autocapitalize="characters" spellcheck="false"
+              class="input {% if form.submission_code_input.errors %}is-invalid{% endif %}"
+              placeholder="e.g. K7XQ9P3M2N"
+              value="{{ form.submission_code_input.value|default:'' }}"
+              {% if campaign.validate_submission_code %}required{% endif %}>
+            {% if form.submission_code_input.errors %}<div class="invalid-feedback">{{ form.submission_code_input.errors.0 }}</div>{% endif %}
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger" style="margin-top: 18px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div>{% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}</div>
+            </div>
+          {% endif %}
+
+          <button class="submit" type="submit">
+            Submit My Entry
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+
+          <p class="legal">Your information is private and used only for the raffle drawing.</p>
+        </form>
+      {% endif %}
+    </section>
+  </main>
+
+  <footer class="footer">
+    &copy; {{ campaign.name }} &middot; Powered by RaffleManager
+  </footer>
+</div>
+</body>
+</html>

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from unfold.admin import ModelAdmin, TabularInline
-from .models import Campaign, Prize, SubmissionCode, Submission, Raffle, RaffleWinner
+from .models import Campaign, Prize, SubmissionCode, Submission, Raffle, RaffleWinner, Store
 
 
 class PrizeInline(TabularInline):
@@ -53,16 +53,57 @@ class SubmissionCodeAdmin(ModelAdmin):
     readonly_fields = ['used_at']
 
 
+@admin.register(Store)
+class StoreAdmin(ModelAdmin):
+    list_display = ['name', 'is_active', 'order', 'submission_count']
+    list_editable = ['is_active', 'order']
+    list_filter = ['is_active']
+    search_fields = ['name']
+    ordering = ['order', 'name']
+
+    def submission_count(self, obj):
+        return obj.submissions.count()
+    submission_count.short_description = 'Submissions'
+
+
 @admin.register(Submission)
 class SubmissionAdmin(ModelAdmin):
-    list_display = ['full_name', 'email', 'campaign', 'state', 'county', 'submitted_at']
-    list_filter = ['campaign', 'state']
+    list_display = ['full_name', 'email', 'campaign', 'store', 'state', 'county', 'submitted_at']
+    list_filter = ['campaign', 'store', 'state']
     search_fields = ['first_name', 'last_name', 'email', 'phone']
-    readonly_fields = ['submitted_at', 'ip_address']
+    readonly_fields = ['submitted_at', 'ip_address', 'image_1_preview', 'image_2_preview']
+    autocomplete_fields = ['store']
+    fieldsets = (
+        ('Entrant', {
+            'fields': ('campaign', 'submission_code', 'first_name', 'last_name', 'email', 'phone'),
+        }),
+        ('Location', {
+            'fields': ('state', 'county'),
+        }),
+        ('Purchase', {
+            'fields': ('store', 'image_1', 'image_1_preview', 'image_2', 'image_2_preview'),
+        }),
+        ('Meta', {
+            'fields': ('submitted_at', 'ip_address'),
+        }),
+    )
 
     def full_name(self, obj):
         return obj.full_name
     full_name.short_description = 'Name'
+
+    def _img(self, field):
+        if field:
+            return format_html('<img src="{}" style="max-height:160px; border-radius:6px;" />', field.url)
+        return '—'
+
+    def image_1_preview(self, obj):
+        return self._img(obj.image_1)
+    image_1_preview.short_description = 'Image 1 preview'
+
+    def image_2_preview(self, obj):
+        return self._img(obj.image_2)
+    image_2_preview.short_description = 'Image 2 preview'
 
 
 @admin.register(Raffle)

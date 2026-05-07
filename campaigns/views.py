@@ -23,7 +23,7 @@ def submission_form(request, campaign_slug):
             messages.error(request, 'This campaign is not currently accepting submissions.')
             return redirect('submission_form', campaign_slug=campaign_slug)
 
-        form = SubmissionForm(request.POST, campaign=campaign)
+        form = SubmissionForm(request.POST, request.FILES, campaign=campaign)
         if form.is_valid():
             submission = form.save(commit=False)
             submission.campaign = campaign
@@ -57,11 +57,22 @@ def submission_success(request, campaign_slug):
     return render(request, 'campaigns/submission_success.html', {'campaign': campaign})
 
 
+def submission_form_preview(request, campaign_slug, variant):
+    from django.http import Http404
+    if variant not in ('a', 'b', 'c'):
+        raise Http404("Unknown preview variant")
+    campaign = get_object_or_404(Campaign, slug=campaign_slug)
+    form = SubmissionForm(campaign=campaign)
+    return render(request, f'campaigns/_proposals/form_{variant}.html', {
+        'campaign': campaign,
+        'form': form,
+        'campaign_open': True,
+    })
+
+
 @login_required
 def dashboard(request):
-    campaigns = Campaign.objects.annotate(
-        submission_count=Count('submissions'),
-    ).order_by('-is_active', '-created_at')
+    campaigns = Campaign.objects.order_by('-is_active', '-created_at')
 
     active_campaigns = campaigns.filter(is_active=True)
     inactive_campaigns = campaigns.filter(is_active=False)

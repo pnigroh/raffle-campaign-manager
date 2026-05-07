@@ -6,6 +6,7 @@ urlpatterns = [
     # Public
     path('submit/<slug:campaign_slug>/', views.submission_form, name='submission_form'),
     path('submit/<slug:campaign_slug>/success/', views.submission_success, name='submission_success'),
+    path('submit/<slug:campaign_slug>/preview/<str:variant>/', views.submission_form_preview, name='submission_form_preview'),
 
     # Auth
     path('dashboard/login/', auth_views.LoginView.as_view(

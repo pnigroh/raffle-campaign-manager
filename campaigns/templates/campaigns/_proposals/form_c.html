@@ -1,0 +1,790 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ campaign.name }} — Issue No. {{ campaign.id|stringformat:"03d" }}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Bodoni:ital,wght@0,400;0,500;0,700;0,800;1,400;1,700&family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" crossorigin="anonymous">
+
+  <style>
+    :root {
+      --paper: #FAFAF7;
+      --paper-2: #F4F2EC;
+      --ink: #18181B;
+      --ink-2: #3F3F46;
+      --muted: #71717A;
+      --line: #D4D4D0;
+      --rule: #18181B;
+      --accent: #EC4899;
+      --accent-soft: #FCE7F3;
+      --danger: #B91C1C;
+      --radius: 6px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Public Sans', system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+      color: var(--ink);
+      background: var(--paper);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .serif { font-family: 'Libre Bodoni', 'Times New Roman', serif; }
+
+    .masthead {
+      border-bottom: 4px double var(--rule);
+      padding: 22px 28px 14px;
+    }
+
+    .masthead-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: end;
+      gap: 18px;
+    }
+
+    .meta-line {
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .meta-line.right { text-align: right; }
+
+    .wordmark {
+      font-family: 'Libre Bodoni', serif;
+      font-weight: 800;
+      font-size: clamp(1.6rem, 4.6vw, 2.6rem);
+      letter-spacing: -0.01em;
+      text-align: center;
+      line-height: 1;
+    }
+
+    .wordmark .ampersand {
+      font-style: italic;
+      font-weight: 500;
+      color: var(--accent);
+      padding: 0 6px;
+    }
+
+    .meta-row {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 10px 28px 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.74rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 12px;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      color: var(--ink);
+      background: transparent;
+    }
+
+    .status-chip::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--ink);
+    }
+
+    .status-chip.live::before { background: var(--accent); }
+    .status-chip.live { color: var(--ink); border-color: var(--ink); }
+
+    .hero {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 56px 28px 28px;
+    }
+
+    .kicker {
+      font-size: 0.78rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    .headline {
+      font-family: 'Libre Bodoni', serif;
+      font-size: clamp(2.6rem, 8vw, 5.4rem);
+      line-height: 0.94;
+      letter-spacing: -0.025em;
+      font-weight: 800;
+      max-width: 14ch;
+      margin: 0 0 22px;
+    }
+
+    .headline em {
+      font-style: italic;
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .deck {
+      font-family: 'Libre Bodoni', serif;
+      font-style: italic;
+      font-weight: 400;
+      font-size: clamp(1.05rem, 1.8vw, 1.32rem);
+      line-height: 1.5;
+      color: var(--ink-2);
+      max-width: 56ch;
+    }
+
+    .deck::first-letter {
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .byline {
+      margin-top: 22px;
+      font-size: 0.76rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .byline strong {
+      display: block;
+      font-family: 'Libre Bodoni', serif;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--ink);
+      margin-top: 4px;
+    }
+
+    .layout {
+      max-width: 1180px;
+      margin: 12px auto 0;
+      padding: 0 28px 80px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 36px;
+      border-top: 1px solid var(--line);
+      padding-top: 36px;
+    }
+
+    @media (min-width: 980px) {
+      .layout { grid-template-columns: 1fr 1.4fr; gap: 64px; }
+    }
+
+    .sidebar { position: relative; }
+
+    @media (min-width: 980px) {
+      .sidebar { position: sticky; top: 28px; align-self: start; }
+    }
+
+    .section-title {
+      font-family: 'Libre Bodoni', serif;
+      font-style: italic;
+      font-weight: 500;
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      text-transform: lowercase;
+      margin: 0 0 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .prize-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .prize {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 16px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .prize:last-child { border-bottom: 0; padding-bottom: 0; }
+
+    .prize-num {
+      font-family: 'Libre Bodoni', serif;
+      font-style: italic;
+      font-size: 2.2rem;
+      font-weight: 500;
+      color: var(--accent);
+      line-height: 0.9;
+      width: 40px;
+    }
+
+    .prize-name {
+      font-family: 'Libre Bodoni', serif;
+      font-weight: 700;
+      font-size: 1.12rem;
+      letter-spacing: -0.005em;
+      margin-bottom: 6px;
+    }
+
+    .prize-desc {
+      font-size: 0.92rem;
+      color: var(--ink-2);
+      line-height: 1.6;
+    }
+
+    .form-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 36px 28px;
+    }
+
+    @media (min-width: 720px) { .form-card { padding: 48px 44px; } }
+
+    .form-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 22px;
+      margin-bottom: 28px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .form-card-head h2 {
+      font-family: 'Libre Bodoni', serif;
+      font-weight: 700;
+      font-size: 1.6rem;
+      margin: 0 0 4px;
+      letter-spacing: -0.01em;
+    }
+
+    .form-card-head h2 em { font-style: italic; color: var(--accent); font-weight: 500; }
+
+    .form-card-head p { color: var(--muted); font-size: 0.92rem; margin: 0; }
+
+    .form-step {
+      font-family: 'Libre Bodoni', serif;
+      font-style: italic;
+      font-size: 0.9rem;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    @media (min-width: 540px) { .row-2 { grid-template-columns: 1fr 1fr; gap: 22px; } }
+
+    .field { margin-bottom: 18px; }
+
+    .label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .input, .select {
+      display: block;
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 0;
+      font-family: 'Public Sans', sans-serif;
+      font-size: 1.02rem;
+      color: var(--ink);
+      background: transparent;
+      border: 0;
+      border-bottom: 1px solid var(--ink);
+      border-radius: 0;
+      transition: border-color 160ms ease, padding-bottom 160ms ease;
+    }
+
+    .input::placeholder { color: var(--muted); font-style: italic; font-weight: 300; }
+
+    .input:focus, .select:focus {
+      outline: none;
+      border-bottom-width: 2px;
+      border-color: var(--accent);
+      padding-bottom: 11px;
+    }
+
+    .input.is-invalid, .select.is-invalid {
+      border-color: var(--danger);
+    }
+
+    .select {
+      appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='%2318181B' d='M3 6l5 5 5-5z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 4px center;
+      padding-right: 30px;
+    }
+
+    .invalid-feedback {
+      display: block;
+      margin-top: 6px;
+      color: var(--danger);
+      font-size: 0.84rem;
+    }
+
+    .file-input {
+      display: block;
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 0;
+      font-family: 'Public Sans', sans-serif;
+      font-size: 0.95rem;
+      color: var(--ink-2);
+      background: transparent;
+      border: 0;
+      border-bottom: 1px solid var(--ink);
+      border-radius: 0;
+      cursor: pointer;
+      transition: border-color 160ms ease;
+    }
+    .file-input:focus { outline: none; border-color: var(--accent); }
+    .file-input.is-invalid { border-color: var(--danger); }
+    .file-input::file-selector-button {
+      margin-right: 14px;
+      padding: 6px 14px;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--ink);
+      font-family: 'Libre Bodoni', serif;
+      font-style: italic;
+      font-size: 0.86rem;
+      cursor: pointer;
+      transition: background 160ms ease, color 160ms ease;
+    }
+    .file-input::file-selector-button:hover { background: var(--ink); color: var(--paper); }
+    .file-hint {
+      font-family: 'Libre Bodoni', serif;
+      font-style: italic;
+      font-size: 0.84rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .code-block {
+      margin-top: 32px;
+      padding: 24px 22px;
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      border-radius: 2px;
+    }
+
+    .code-block-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .code-block-eyebrow::before {
+      content: '§';
+      font-family: 'Libre Bodoni', serif;
+      font-size: 1.2rem;
+      font-style: italic;
+    }
+
+    .code-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border-radius: 2px;
+      margin-left: 6px;
+    }
+
+    .code-tag.optional { background: var(--ink-2); }
+
+    .code-help {
+      font-family: 'Libre Bodoni', serif;
+      font-style: italic;
+      color: var(--ink-2);
+      margin: 0 0 16px;
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+
+    .code-block .input {
+      font-size: 1.05rem;
+      letter-spacing: 0.06em;
+      padding: 12px 0;
+      border-bottom-color: var(--accent);
+    }
+
+    .alert {
+      padding: 12px 14px;
+      border-left: 3px solid var(--danger);
+      background: #FEF2F2;
+      color: var(--danger);
+      font-size: 0.9rem;
+      margin-bottom: 18px;
+    }
+
+    .submit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      min-height: 56px;
+      margin-top: 32px;
+      padding: 16px 22px;
+      font-family: 'Libre Bodoni', serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: 0.04em;
+      color: var(--paper);
+      background: var(--ink);
+      border: 0;
+      border-radius: 0;
+      cursor: pointer;
+      transition: background 160ms ease, transform 160ms ease;
+      position: relative;
+    }
+
+    .submit em { font-style: italic; font-weight: 500; color: var(--accent); }
+
+    .submit:hover { background: #000; }
+    .submit:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+    .legal {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-family: 'Libre Bodoni', serif;
+      font-style: italic;
+    }
+
+    .closed-state {
+      padding: 64px 28px;
+      text-align: center;
+    }
+
+    .closed-state-rule {
+      width: 60px;
+      height: 1px;
+      background: var(--ink);
+      margin: 0 auto 26px;
+    }
+
+    .closed-state h3 {
+      font-family: 'Libre Bodoni', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0 0 12px;
+      letter-spacing: -0.015em;
+    }
+
+    .closed-state p {
+      font-family: 'Libre Bodoni', serif;
+      font-style: italic;
+      color: var(--ink-2);
+      margin: 0 auto;
+      max-width: 38ch;
+    }
+
+    .colophon {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px;
+      border-top: 4px double var(--rule);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .colophon span em { color: var(--accent); font-style: italic; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .masthead-inner { grid-template-columns: 1fr; text-align: center; }
+      .meta-line.right { text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="meta-line">Volume I &middot; No. {{ campaign.id|stringformat:"03d" }}</div>
+    <div class="wordmark">RaffleManager <span class="ampersand">&amp;</span> Co.</div>
+    <div class="meta-line right">{{ campaign.start_date|date:"l, F j" }} &middot; {{ campaign.end_date|date:"Y" }}</div>
+  </div>
+</header>
+
+<div class="meta-row">
+  <div>{{ campaign.prizes.count }} Prize{{ campaign.prizes.count|pluralize }} &middot; By Random Draw &middot; All-American Entry</div>
+  {% if campaign_open %}
+    <span class="status-chip live">Now Open</span>
+  {% else %}
+    <span class="status-chip">Closed</span>
+  {% endif %}
+</div>
+
+<section class="hero">
+  <div class="kicker">— Feature</div>
+  <h1 class="headline">{{ campaign.name|default:"Three machines," }}<em> &amp; one</em> winner.</h1>
+  {% if campaign.description %}
+    <p class="deck">{{ campaign.description }}</p>
+  {% endif %}
+
+  <div class="byline">
+    <span>Drawing<strong>{{ campaign.end_date|date:"M j, Y" }}</strong></span>
+    <span>Prizes<strong>{{ campaign.prizes.count }}</strong></span>
+    <span>Entry<strong>One per email</strong></span>
+  </div>
+</section>
+
+<main class="layout">
+
+  <aside class="sidebar" aria-label="Prize archive">
+    <h2 class="section-title">the lineup</h2>
+    <ol class="prize-list">
+      {% for prize in campaign.prizes.all %}
+        <li class="prize">
+          <div class="prize-num">{{ forloop.counter|stringformat:"02d" }}</div>
+          <div>
+            <div class="prize-name">{{ prize.name }}</div>
+            <p class="prize-desc">{{ prize.description }}</p>
+          </div>
+        </li>
+      {% empty %}
+        <li class="prize"><div class="prize-desc">Prizes to be announced.</div></li>
+      {% endfor %}
+    </ol>
+  </aside>
+
+  <section class="form-card">
+    {% if not campaign_open %}
+      <div class="closed-state">
+        <div class="closed-state-rule"></div>
+        <h3>The window has closed.</h3>
+        <p>The entry period for <em>{{ campaign.name }}</em> has ended. Thank you for reading.</p>
+      </div>
+    {% else %}
+
+      <header class="form-card-head">
+        <div>
+          <h2>Submit your <em>entry</em>.</h2>
+          <p>Six fields. A minute of your time. Then we'll be in touch.</p>
+        </div>
+        <span class="form-step">No. 01</span>
+      </header>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <div class="row-2">
+          <div>
+            <label class="label" for="id_first_name">First name</label>
+            <input type="text" id="id_first_name" name="first_name" autocomplete="given-name"
+              class="input {% if form.first_name.errors %}is-invalid{% endif %}"
+              placeholder="James"
+              value="{{ form.first_name.value|default:'' }}" required>
+            {% if form.first_name.errors %}<div class="invalid-feedback">{{ form.first_name.errors.0 }}</div>{% endif %}
+          </div>
+          <div>
+            <label class="label" for="id_last_name">Last name</label>
+            <input type="text" id="id_last_name" name="last_name" autocomplete="family-name"
+              class="input {% if form.last_name.errors %}is-invalid{% endif %}"
+              placeholder="Hunt"
+              value="{{ form.last_name.value|default:'' }}" required>
+            {% if form.last_name.errors %}<div class="invalid-feedback">{{ form.last_name.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div>
+            <label class="label" for="id_state">State</label>
+            <select id="id_state" name="state" autocomplete="address-level1"
+              class="select {% if form.state.errors %}is-invalid{% endif %}" required>
+              {% for val, lbl in form.fields.state.choices %}
+                <option value="{{ val }}" {% if form.state.value == val %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+            {% if form.state.errors %}<div class="invalid-feedback">{{ form.state.errors.0 }}</div>{% endif %}
+          </div>
+          <div>
+            <label class="label" for="id_county">County</label>
+            <input type="text" id="id_county" name="county" autocomplete="address-level2"
+              class="input {% if form.county.errors %}is-invalid{% endif %}"
+              placeholder="Suffolk"
+              value="{{ form.county.value|default:'' }}" required>
+            {% if form.county.errors %}<div class="invalid-feedback">{{ form.county.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div>
+            <label class="label" for="id_phone">Phone</label>
+            <input type="tel" id="id_phone" name="phone" autocomplete="tel"
+              class="input {% if form.phone.errors %}is-invalid{% endif %}"
+              placeholder="(555) 010-0199"
+              value="{{ form.phone.value|default:'' }}" required>
+            {% if form.phone.errors %}<div class="invalid-feedback">{{ form.phone.errors.0 }}</div>{% endif %}
+          </div>
+          <div>
+            <label class="label" for="id_email">Email address</label>
+            <input type="email" id="id_email" name="email" autocomplete="email"
+              class="input {% if form.email.errors %}is-invalid{% endif %}"
+              placeholder="you@example.com"
+              value="{{ form.email.value|default:'' }}" required>
+            {% if form.email.errors %}<div class="invalid-feedback">{{ form.email.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div>
+            <label class="label" for="id_store">Store of purchase</label>
+            <select id="id_store" name="store"
+              class="select {% if form.store.errors %}is-invalid{% endif %}">
+              {% for val, lbl in form.fields.store.choices %}
+                <option value="{{ val }}" {% if form.store.value|stringformat:'s' == val|stringformat:'s' %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+            {% if form.store.errors %}<div class="invalid-feedback">{{ form.store.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div>
+            <label class="label" for="id_image_1">Plate I &mdash; Receipt</label>
+            <input type="file" id="id_image_1" name="image_1" accept="image/*"
+              class="file-input {% if form.image_1.errors %}is-invalid{% endif %}">
+            <div class="file-hint">JPG or PNG, up to 10 megabytes.</div>
+            {% if form.image_1.errors %}<div class="invalid-feedback">{{ form.image_1.errors.0 }}</div>{% endif %}
+          </div>
+          <div>
+            <label class="label" for="id_image_2">Plate II &mdash; Product</label>
+            <input type="file" id="id_image_2" name="image_2" accept="image/*"
+              class="file-input {% if form.image_2.errors %}is-invalid{% endif %}">
+            <div class="file-hint">JPG or PNG, up to 10 megabytes.</div>
+            {% if form.image_2.errors %}<div class="invalid-feedback">{{ form.image_2.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-eyebrow">
+            Submission Code
+            {% if campaign.validate_submission_code %}
+              <span class="code-tag">Required</span>
+            {% else %}
+              <span class="code-tag optional">Optional</span>
+            {% endif %}
+          </div>
+          <p class="code-help">
+            {% if campaign.validate_submission_code %}
+              A valid code from your purchase confirmation is required to complete the entry.
+            {% else %}
+              If you received a code with your purchase, enter it below.
+            {% endif %}
+          </p>
+          <input type="text" id="id_submission_code_input" name="submission_code_input"
+            autocomplete="off" autocapitalize="characters" spellcheck="false"
+            class="input {% if form.submission_code_input.errors %}is-invalid{% endif %}"
+            placeholder="K7XQ9P3M2N"
+            value="{{ form.submission_code_input.value|default:'' }}"
+            {% if campaign.validate_submission_code %}required{% endif %}>
+          {% if form.submission_code_input.errors %}<div class="invalid-feedback">{{ form.submission_code_input.errors.0 }}</div>{% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+          <div class="alert" style="margin-top: 22px;">
+            {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+          </div>
+        {% endif %}
+
+        <button class="submit" type="submit">
+          Submit my <em>entry</em>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+
+        <p class="legal">Your information is held in confidence and used only for the drawing.</p>
+      </form>
+    {% endif %}
+  </section>
+</main>
+
+<footer class="colophon">
+  <span>Set in <em>Libre Bodoni</em> &amp; <em>Public Sans</em></span>
+  <span>&copy; {{ campaign.name }} &middot; RaffleManager <em>&amp;</em> Co.</span>
+</footer>
+
+</body>
+</html>
