@@ -121,6 +121,7 @@ class PrizeEditTests(TestCase):
             data={"name": "Updated", "description": "new", "quantity": 5, "order": 20},
         )
         self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, reverse("campaign_detail", args=[self.camp_x.id]))
         self.prize_x.refresh_from_db()
         self.assertEqual(self.prize_x.name, "Updated")
         self.assertEqual(self.prize_x.quantity, 5)
