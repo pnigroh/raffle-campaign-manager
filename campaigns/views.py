@@ -10,7 +10,7 @@ from django.http import JsonResponse, HttpResponseRedirect
 import json
 
 from .models import Campaign, Prize, Submission, SubmissionCode, Raffle, RaffleWinner
-from .forms import SubmissionForm, RaffleSegmentForm, CodeImportForm
+from .forms import SubmissionForm, RaffleSegmentForm, CodeImportForm, PrizeForm
 from .utils import import_codes_from_csv, conduct_raffle, export_winners_csv, export_submissions_csv
 
 
@@ -356,3 +356,19 @@ def ajax_filter_count(request, campaign_id):
         qs = qs.filter(submitted_at__date__lte=date_to)
 
     return JsonResponse({'count': qs.count()})
+
+
+@login_required
+@require_POST
+def prize_add(request, campaign_id):
+    campaign = _get_managed_campaign_or_403(request.user, campaign_id)
+    form = PrizeForm(request.POST)
+    if form.is_valid():
+        prize = form.save(commit=False)
+        prize.campaign = campaign
+        prize.save()
+        messages.success(request, 'Premio guardado.')
+    else:
+        errs = '; '.join(f"{k}: {', '.join(v)}" for k, v in form.errors.items())
+        messages.error(request, f'No se pudo guardar el premio: {errs}')
+    return redirect('campaign_detail', campaign_id=campaign.id)

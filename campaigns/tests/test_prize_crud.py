@@ -62,3 +62,39 @@ class PrizeFormTests(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertIn("quantity", form.errors)
+
+
+class PrizeAddTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.alice = User.objects.create_user("alice", password="pw", is_staff=True)
+        cls.bob = User.objects.create_user("bob", password="pw", is_staff=True)
+        cls.charlie = User.objects.create_superuser("charlie", "c@x.com", "pw")
+        cls.camp_x = _campaign("Campaign X", "camp-x", manager=cls.alice)
+        cls.camp_y = _campaign("Campaign Y", "camp-y", manager=cls.bob)
+
+    def test_prize_add_creates_and_redirects(self):
+        self.client.force_login(self.alice)
+        resp = self.client.post(
+            reverse("prize_add", args=[self.camp_x.id]),
+            data={"name": "Camiseta", "description": "M", "quantity": 1, "order": 10},
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, reverse("campaign_detail", args=[self.camp_x.id]))
+        self.assertTrue(
+            Prize.objects.filter(campaign=self.camp_x, name="Camiseta").exists()
+        )
+
+    def test_prize_add_non_manager_gets_403(self):
+        self.client.force_login(self.alice)
+        resp = self.client.post(
+            reverse("prize_add", args=[self.camp_y.id]),
+            data={"name": "Hijack", "description": "", "quantity": 1, "order": 0},
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.assertFalse(Prize.objects.filter(name="Hijack").exists())
+
+    def test_prize_add_get_returns_405(self):
+        self.client.force_login(self.alice)
+        resp = self.client.get(reverse("prize_add", args=[self.camp_x.id]))
+        self.assertEqual(resp.status_code, 405)
