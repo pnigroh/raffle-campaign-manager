@@ -1,27 +1,28 @@
 {% extends "campaigns/base.html" %}
+{% load i18n %}
 
-{% block title %}Raffle Results - {{ raffle.campaign.name }}{% endblock %}
-{% block topbar_title %}Raffle Results{% endblock %}
+{% block title %}{% trans "Resultados del Sorteo" %} - {{ raffle.campaign.name }}{% endblock %}
+{% block topbar_title %}{% trans "Resultados del Sorteo" %}{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
     <div>
-      <h1><i class="bi bi-trophy-fill me-2 text-warning"></i>Raffle Results</h1>
+      <h1><i class="bi bi-trophy-fill me-2 text-warning"></i>{% trans "Resultados del Sorteo" %}</h1>
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">{% trans "Tablero" %}</a></li>
           <li class="breadcrumb-item"><a href="{% url 'campaign_detail' raffle.campaign.id %}">{{ raffle.campaign.name }}</a></li>
-          <li class="breadcrumb-item active">Raffle Results</li>
+          <li class="breadcrumb-item active">{% trans "Resultados del Sorteo" %}</li>
         </ol>
       </nav>
     </div>
     <div class="d-flex gap-2 flex-wrap">
       <a href="{% url 'campaign_detail' raffle.campaign.id %}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i>Back to Campaign
+        <i class="bi bi-arrow-left me-1"></i>{% trans "Volver a la Campaña" %}
       </a>
       <a href="{% url 'export_winners' raffle.id %}" class="btn btn-success">
-        <i class="bi bi-download me-1"></i>Export Winners CSV
+        <i class="bi bi-download me-1"></i>{% trans "Exportar Ganadores CSV" %}
       </a>
     </div>
   </div>
@@ -30,43 +31,43 @@
 <!-- Raffle Info Card -->
 <div class="card mb-4">
   <div class="card-header">
-    <i class="bi bi-info-circle me-2 text-primary"></i>Raffle Information
+    <i class="bi bi-info-circle me-2 text-primary"></i>{% trans "Información del Sorteo" %}
   </div>
   <div class="card-body">
     <div class="row g-3">
       <div class="col-sm-6 col-lg-3">
-        <div class="text-muted-sm mb-1">Campaign</div>
+        <div class="text-muted-sm mb-1">{% trans "Campaña" %}</div>
         <div class="fw-semibold">{{ raffle.campaign.name }}</div>
       </div>
       <div class="col-sm-6 col-lg-3">
-        <div class="text-muted-sm mb-1">Date Conducted</div>
-        <div class="fw-semibold">{{ raffle.conducted_at|date:"M d, Y H:i" }}</div>
+        <div class="text-muted-sm mb-1">{% trans "Fecha del Sorteo" %}</div>
+        <div class="fw-semibold">{{ raffle.conducted_at|date:"d/m/Y H:i" }}</div>
       </div>
       <div class="col-sm-6 col-lg-3">
-        <div class="text-muted-sm mb-1">Conducted By</div>
-        <div class="fw-semibold">{{ raffle.conducted_by.username|default:"Unknown" }}</div>
+        <div class="text-muted-sm mb-1">{% trans "Realizado por" %}</div>
+        <div class="fw-semibold">{{ raffle.conducted_by.username|default:"—" }}</div>
       </div>
       <div class="col-sm-6 col-lg-3">
-        <div class="text-muted-sm mb-1">Participant Pool</div>
-        <div class="fw-semibold">{{ raffle.total_participants }} participants</div>
+        <div class="text-muted-sm mb-1">{% trans "Pool de Participantes" %}</div>
+        <div class="fw-semibold">{% blocktrans with count=raffle.total_participants %}{{ count }} participantes{% endblocktrans %}</div>
       </div>
     </div>
 
     {% if raffle.segment_state or raffle.segment_county or raffle.segment_date_from or raffle.segment_date_to %}
     <hr class="my-3">
     <div class="d-flex flex-wrap gap-2 align-items-center">
-      <span class="text-muted-sm me-1"><i class="bi bi-funnel-fill me-1"></i>Filters applied:</span>
+      <span class="text-muted-sm me-1"><i class="bi bi-funnel-fill me-1"></i>{% trans "Filtros aplicados:" %}</span>
       {% if raffle.segment_state %}
-        <span class="badge bg-primary rounded-pill">State: {{ raffle.segment_state }}</span>
+        <span class="badge bg-primary rounded-pill">{% blocktrans with val=raffle.segment_state %}Depto: {{ val }}{% endblocktrans %}</span>
       {% endif %}
       {% if raffle.segment_county %}
-        <span class="badge bg-primary rounded-pill">County: {{ raffle.segment_county }}</span>
+        <span class="badge bg-primary rounded-pill">{% blocktrans with val=raffle.segment_county %}Mpio: {{ val }}{% endblocktrans %}</span>
       {% endif %}
       {% if raffle.segment_date_from %}
-        <span class="badge bg-info text-dark rounded-pill">From: {{ raffle.segment_date_from }}</span>
+        <span class="badge bg-info text-dark rounded-pill">{% blocktrans with val=raffle.segment_date_from %}Desde: {{ val }}{% endblocktrans %}</span>
       {% endif %}
       {% if raffle.segment_date_to %}
-        <span class="badge bg-info text-dark rounded-pill">To: {{ raffle.segment_date_to }}</span>
+        <span class="badge bg-info text-dark rounded-pill">{% blocktrans with val=raffle.segment_date_to %}Hasta: {{ val }}{% endblocktrans %}</span>
       {% endif %}
     </div>
     {% endif %}
@@ -74,7 +75,7 @@
     {% if raffle.notes %}
     <hr class="my-3">
     <div>
-      <span class="text-muted-sm"><i class="bi bi-sticky me-1"></i>Notes:</span>
+      <span class="text-muted-sm"><i class="bi bi-sticky me-1"></i>{% trans "Notas:" %}</span>
       <span class="ms-1">{{ raffle.notes }}</span>
     </div>
     {% endif %}
@@ -89,7 +90,7 @@
         <i class="bi bi-people-fill text-white"></i>
       </div>
       <div class="stat-value">{{ raffle.total_participants }}</div>
-      <div class="stat-label">Total Participants</div>
+      <div class="stat-label">{% trans "Total de Participantes" %}</div>
     </div>
   </div>
   <div class="col-sm-6 col-lg-4">
@@ -98,7 +99,7 @@
         <i class="bi bi-trophy-fill text-white"></i>
       </div>
       <div class="stat-value">{{ winners.count }}</div>
-      <div class="stat-label">Total Winners</div>
+      <div class="stat-label">{% trans "Total de Ganadores" %}</div>
     </div>
   </div>
   <div class="col-sm-6 col-lg-4">
@@ -107,7 +108,7 @@
         <i class="bi bi-gift-fill text-white"></i>
       </div>
       <div class="stat-value">{{ prizes_winners|length }}</div>
-      <div class="stat-label">Prize Categories</div>
+      <div class="stat-label">{% trans "Categorías de Premio" %}</div>
     </div>
   </div>
 </div>
@@ -127,20 +128,20 @@
         {% endif %}
       </div>
     </div>
-    <span class="badge bg-warning text-dark rounded-pill">{{ prize_winners|length }} winner{{ prize_winners|length|pluralize }}</span>
+    <span class="badge bg-warning text-dark rounded-pill">{% blocktrans with count=prize_winners|length %}{{ count }} ganador(es){% endblocktrans %}</span>
   </div>
   <div class="table-responsive">
     <table class="table table-hover mb-0">
       <thead>
         <tr>
-          <th style="width:60px;">Place</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Phone</th>
-          <th>State</th>
-          <th>County</th>
-          <th>Submission Code</th>
-          <th>Submitted</th>
+          <th style="width:60px;">{% trans "Lugar" %}</th>
+          <th>{% trans "Nombre" %}</th>
+          <th>{% trans "Correo" %}</th>
+          <th>{% trans "Teléfono" %}</th>
+          <th>{% trans "Departamento" %}</th>
+          <th>{% trans "Municipio" %}</th>
+          <th>{% trans "Código de Participación" %}</th>
+          <th>{% trans "Enviado" %}</th>
         </tr>
       </thead>
       <tbody>
@@ -173,7 +174,7 @@
               <span class="text-muted-sm">—</span>
             {% endif %}
           </td>
-          <td><span class="text-muted-sm">{{ winner.submission.submitted_at|date:"M d, Y H:i" }}</span></td>
+          <td><span class="text-muted-sm">{{ winner.submission.submitted_at|date:"d/m/Y H:i" }}</span></td>
         </tr>
         {% endfor %}
       </tbody>
@@ -184,7 +185,7 @@
 <div class="card">
   <div class="card-body text-center py-5 text-muted">
     <i class="bi bi-trophy fs-1 d-block mb-2 opacity-25"></i>
-    No winners were recorded for this raffle.
+    {% trans "No se registraron ganadores para este sorteo." %}
   </div>
 </div>
 {% endfor %}
@@ -192,13 +193,13 @@
 <!-- Bottom Actions -->
 <div class="d-flex gap-2 justify-content-end flex-wrap mt-2">
   <a href="{% url 'campaign_detail' raffle.campaign.id %}" class="btn btn-outline-secondary">
-    <i class="bi bi-arrow-left me-1"></i>Back to Campaign
+    <i class="bi bi-arrow-left me-1"></i>{% trans "Volver a la Campaña" %}
   </a>
   <a href="{% url 'raffle' raffle.campaign.id %}" class="btn btn-outline-warning">
-    <i class="bi bi-stars me-1"></i>Run Another Raffle
+    <i class="bi bi-stars me-1"></i>{% trans "Realizar Otro Sorteo" %}
   </a>
   <a href="{% url 'export_winners' raffle.id %}" class="btn btn-success">
-    <i class="bi bi-download me-1"></i>Export Winners CSV
+    <i class="bi bi-download me-1"></i>{% trans "Exportar Ganadores CSV" %}
   </a>
 </div>
 {% endblock %}

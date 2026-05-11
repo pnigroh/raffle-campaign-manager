@@ -22,6 +22,7 @@ urlpatterns = [
     path('dashboard/campaign/<int:campaign_id>/raffle/', views.raffle_view, name='raffle'),
     path('dashboard/campaign/<int:campaign_id>/import-codes/', views.import_codes_view, name='import_codes'),
     path('dashboard/campaign/<int:campaign_id>/filter-count/', views.ajax_filter_count, name='ajax_filter_count'),
+    path('dashboard/campaign/<int:campaign_id>/submission/<int:submission_id>/validity/', views.submission_set_validity, name='submission_set_validity'),
     path('dashboard/raffle/<int:raffle_id>/results/', views.raffle_results, name='raffle_results'),
     path('dashboard/raffle/<int:raffle_id>/export/', views.export_raffle_winners, name='export_winners'),
 ]

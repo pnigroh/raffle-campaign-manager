@@ -22,7 +22,7 @@ US_STATES = [
 
 
 class SubmissionForm(forms.ModelForm):
-    state = forms.ChoiceField(choices=US_STATES)
+    state = forms.ChoiceField(choices=US_STATES, required=False)
     submission_code_input = forms.CharField(
         max_length=100, required=False,
         label="Submission Code",
@@ -50,6 +50,7 @@ class SubmissionForm(forms.ModelForm):
     def __init__(self, *args, campaign=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.campaign = campaign
+        self.fields['county'].required = False
         if campaign and campaign.validate_submission_code:
             self.fields['submission_code_input'].required = True
             self.fields['submission_code_input'].help_text = "A valid submission code is required."

@@ -1,23 +1,24 @@
 {% extends "campaigns/base.html" %}
+{% load i18n %}
 
-{% block title %}Import Codes - {{ campaign.name }}{% endblock %}
-{% block topbar_title %}Import Submission Codes{% endblock %}
+{% block title %}{% trans "Importar Códigos" %} - {{ campaign.name }}{% endblock %}
+{% block topbar_title %}{% trans "Importar Códigos de Participación" %}{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
     <div>
-      <h1><i class="bi bi-upload me-2 text-primary"></i>Import Submission Codes</h1>
+      <h1><i class="bi bi-upload me-2 text-primary"></i>{% trans "Importar Códigos de Participación" %}</h1>
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">{% trans "Tablero" %}</a></li>
           <li class="breadcrumb-item"><a href="{% url 'campaign_detail' campaign.id %}">{{ campaign.name }}</a></li>
-          <li class="breadcrumb-item active">Import Codes</li>
+          <li class="breadcrumb-item active">{% trans "Importar Códigos" %}</li>
         </ol>
       </nav>
     </div>
     <a href="{% url 'campaign_detail' campaign.id %}" class="btn btn-outline-secondary">
-      <i class="bi bi-arrow-left me-1"></i>Back to Campaign
+      <i class="bi bi-arrow-left me-1"></i>{% trans "Volver a la Campaña" %}
     </a>
   </div>
 </div>
@@ -27,7 +28,7 @@
   <div class="col-lg-7">
     <div class="card">
       <div class="card-header">
-        <i class="bi bi-file-earmark-arrow-up me-2 text-primary"></i>Upload CSV File
+        <i class="bi bi-file-earmark-arrow-up me-2 text-primary"></i>{% trans "Subir Archivo CSV" %}
       </div>
       <div class="card-body">
 
@@ -47,7 +48,7 @@
           {% csrf_token %}
 
           <div class="mb-4">
-            <label class="form-label" for="id_csv_file">CSV File</label>
+            <label class="form-label" for="id_csv_file">{% trans "Archivo CSV" %}</label>
             <div
               class="upload-zone"
               id="uploadZone"
@@ -56,8 +57,8 @@
               <div class="upload-icon">
                 <i class="bi bi-cloud-arrow-up-fill"></i>
               </div>
-              <div class="upload-text">Click to choose file or drag &amp; drop</div>
-              <div class="upload-subtext">CSV files only &bull; UTF-8 or UTF-8 BOM encoded</div>
+              <div class="upload-text">{% trans "Haz clic para elegir un archivo o arrástralo aquí" %}</div>
+              <div class="upload-subtext">{% trans "Solo archivos CSV · Codificación UTF-8 o UTF-8 BOM" %}</div>
               <div id="fileName" class="upload-filename"></div>
             </div>
             <input
@@ -83,21 +84,21 @@
                 checked
               >
               <label class="form-check-label" for="id_skip_duplicates">
-                Skip duplicate codes
-                <span class="text-muted" style="font-size:0.82rem;">(recommended)</span>
+                {% trans "Omitir códigos duplicados" %}
+                <span class="text-muted" style="font-size:0.82rem;">({% trans "recomendado" %})</span>
               </label>
               <div class="text-muted mt-1" style="font-size:0.8rem;">
-                If unchecked, importing a duplicate code will cause an error for that row.
+                {% trans "Si se desmarca, importar un código duplicado generará un error en esa fila." %}
               </div>
             </div>
           </div>
 
           <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">
-              <i class="bi bi-upload me-1"></i>Import Codes
+              <i class="bi bi-upload me-1"></i>{% trans "Importar Códigos" %}
             </button>
             <a href="{% url 'campaign_detail' campaign.id %}" class="btn btn-outline-secondary">
-              Cancel
+              {% trans "Cancelar" %}
             </a>
           </div>
         </form>
@@ -109,15 +110,15 @@
   <div class="col-lg-5">
     <div class="card mb-3">
       <div class="card-header">
-        <i class="bi bi-question-circle me-2 text-primary"></i>CSV Format Instructions
+        <i class="bi bi-question-circle me-2 text-primary"></i>{% trans "Instrucciones del Formato CSV" %}
       </div>
       <div class="card-body" style="font-size:0.875rem;">
-        <p class="text-muted mb-3">Your CSV file can be in any of the following formats:</p>
+        <p class="text-muted mb-3">{% trans "Tu archivo CSV puede tener cualquiera de los siguientes formatos:" %}</p>
 
         <div class="mb-3">
           <div class="fw-semibold mb-2">
-            <span class="badge bg-primary me-1">Option 1</span>
-            Single column with header
+            <span class="badge bg-primary me-1">{% trans "Opción" %} 1</span>
+            {% trans "Una columna con encabezado" %}
           </div>
           <pre class="bg-light border rounded p-3 mb-0" style="font-size:0.8rem;">code
 ABC123
@@ -127,8 +128,8 @@ GHI789</pre>
 
         <div class="mb-3">
           <div class="fw-semibold mb-2">
-            <span class="badge bg-success me-1">Option 2</span>
-            Single column, no header
+            <span class="badge bg-success me-1">{% trans "Opción" %} 2</span>
+            {% trans "Una columna sin encabezado" %}
           </div>
           <pre class="bg-light border rounded p-3 mb-0" style="font-size:0.8rem;">ABC123
 DEF456
@@ -137,8 +138,8 @@ GHI789</pre>
 
         <div class="mb-3">
           <div class="fw-semibold mb-2">
-            <span class="badge bg-info text-dark me-1">Option 3</span>
-            Multiple columns (first used)
+            <span class="badge bg-info text-dark me-1">{% trans "Opción" %} 3</span>
+            {% trans "Varias columnas (se usa la primera)" %}
           </div>
           <pre class="bg-light border rounded p-3 mb-0" style="font-size:0.8rem;">code,description,batch
 ABC123,Prize Code,Batch1
@@ -148,12 +149,12 @@ DEF456,Prize Code,Batch1</pre>
         <div class="alert alert-info d-flex gap-2 p-3 mb-0" style="font-size:0.82rem;">
           <i class="bi bi-lightbulb-fill flex-shrink-0 mt-1"></i>
           <div>
-            <strong>Tips:</strong>
+            <strong>{% trans "Consejos:" %}</strong>
             <ul class="mb-0 ps-3 mt-1">
-              <li>Remove any leading/trailing spaces from codes</li>
-              <li>Codes are case-sensitive</li>
-              <li>Maximum code length is 100 characters</li>
-              <li>Save your file as UTF-8 encoded CSV</li>
+              <li>{% trans "Elimina espacios al inicio o final de los códigos" %}</li>
+              <li>{% trans "Los códigos distinguen mayúsculas y minúsculas" %}</li>
+              <li>{% trans "La longitud máxima del código es 100 caracteres" %}</li>
+              <li>{% trans "Guarda tu archivo como CSV con codificación UTF-8" %}</li>
             </ul>
           </div>
         </div>
@@ -162,30 +163,30 @@ DEF456,Prize Code,Batch1</pre>
 
     <div class="card">
       <div class="card-header">
-        <i class="bi bi-bar-chart me-2 text-primary"></i>Current Code Stats
+        <i class="bi bi-bar-chart me-2 text-primary"></i>{% trans "Estadísticas Actuales de Códigos" %}
       </div>
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="text-muted" style="font-size:0.875rem;">Campaign</span>
+          <span class="text-muted" style="font-size:0.875rem;">{% trans "Campaña" %}</span>
           <span class="fw-semibold">{{ campaign.name }}</span>
         </div>
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="text-muted" style="font-size:0.875rem;">Code Validation</span>
+          <span class="text-muted" style="font-size:0.875rem;">{% trans "Validación de Código" %}</span>
           <span class="badge {% if campaign.validate_submission_code %}bg-success{% else %}bg-secondary{% endif %}">
-            {% if campaign.validate_submission_code %}Required{% else %}Optional{% endif %}
+            {% if campaign.validate_submission_code %}{% trans "Requerido" %}{% else %}{% trans "Opcional" %}{% endif %}
           </span>
         </div>
         <hr class="my-2">
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="text-muted" style="font-size:0.875rem;">Total Codes</span>
+          <span class="text-muted" style="font-size:0.875rem;">{% trans "Total de Códigos" %}</span>
           <span class="fw-bold">{{ campaign.submission_codes.count }}</span>
         </div>
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="text-muted" style="font-size:0.875rem;">Used Codes</span>
+          <span class="text-muted" style="font-size:0.875rem;">{% trans "Códigos Usados" %}</span>
           <span class="fw-bold text-warning">{{ campaign.submission_codes.filter.is_used|default:"0" }}</span>
         </div>
         <div class="d-flex justify-content-between align-items-center">
-          <span class="text-muted" style="font-size:0.875rem;">Available Codes</span>
+          <span class="text-muted" style="font-size:0.875rem;">{% trans "Códigos Disponibles" %}</span>
           <span class="fw-bold text-success">{{ campaign.unused_codes_count }}</span>
         </div>
       </div>

@@ -2,14 +2,32 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import views as auth_views
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 from django.db.models import Count, Q
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 import json
 
 from .models import Campaign, Prize, Submission, SubmissionCode, Raffle, RaffleWinner
 from .forms import SubmissionForm, RaffleSegmentForm, CodeImportForm
 from .utils import import_codes_from_csv, conduct_raffle, export_winners_csv, export_submissions_csv
+
+
+def _campaigns_for(user):
+    """Queryset of campaigns the user can manage (superusers see all)."""
+    if user.is_superuser:
+        return Campaign.objects.all()
+    return user.managed_campaigns.all()
+
+
+def _get_managed_campaign_or_403(user, campaign_id):
+    if user.is_superuser:
+        return get_object_or_404(Campaign, id=campaign_id)
+    try:
+        return user.managed_campaigns.get(id=campaign_id)
+    except Campaign.DoesNotExist:
+        raise PermissionDenied("You don't have access to this campaign.")
 
 
 def submission_form(request, campaign_slug):
@@ -72,14 +90,15 @@ def submission_form_preview(request, campaign_slug, variant):
 
 @login_required
 def dashboard(request):
-    campaigns = Campaign.objects.order_by('-is_active', '-created_at')
+    campaigns = _campaigns_for(request.user).order_by('-is_active', '-created_at')
 
     active_campaigns = campaigns.filter(is_active=True)
     inactive_campaigns = campaigns.filter(is_active=False)
 
-    total_submissions = Submission.objects.count()
-    total_campaigns = Campaign.objects.count()
-    recent_submissions = Submission.objects.select_related('campaign').order_by('-submitted_at')[:10]
+    submissions_qs = Submission.objects.filter(campaign__in=campaigns)
+    total_submissions = submissions_qs.count()
+    total_campaigns = campaigns.count()
+    recent_submissions = submissions_qs.select_related('campaign').order_by('-submitted_at')[:10]
 
     return render(request, 'campaigns/dashboard.html', {
         'active_campaigns': active_campaigns,
@@ -92,7 +111,7 @@ def dashboard(request):
 
 @login_required
 def campaign_detail(request, campaign_id):
-    campaign = get_object_or_404(Campaign, id=campaign_id)
+    campaign = _get_managed_campaign_or_403(request.user, campaign_id)
 
     submissions = campaign.submissions.select_related('submission_code').order_by('-submitted_at')
 
@@ -136,8 +155,39 @@ def campaign_detail(request, campaign_id):
 
 
 @login_required
+@require_POST
+def submission_set_validity(request, campaign_id, submission_id):
+    """Toggle a submission's is_valid state. Used by the per-row buttons in
+    the campaign detail page. Only managers of the campaign may invoke this."""
+    campaign = _get_managed_campaign_or_403(request.user, campaign_id)
+    submission = get_object_or_404(Submission, id=submission_id, campaign=campaign)
+
+    action = request.POST.get('action')
+    if action == 'invalidate':
+        submission.is_valid = False
+        submission.invalidation_reason = request.POST.get('reason', '').strip()[:200]
+        submission.validated_at = timezone.now()
+        submission.validated_by = request.user
+        submission.save(update_fields=['is_valid', 'invalidation_reason', 'validated_at', 'validated_by'])
+        messages.warning(request, f'{submission.full_name}\'s submission marked invalid.')
+    elif action == 'validate':
+        submission.is_valid = True
+        submission.invalidation_reason = ''
+        submission.validated_at = timezone.now()
+        submission.validated_by = request.user
+        submission.save(update_fields=['is_valid', 'invalidation_reason', 'validated_at', 'validated_by'])
+        messages.success(request, f'{submission.full_name}\'s submission marked valid.')
+    else:
+        messages.error(request, 'Unknown action.')
+
+    from django.urls import reverse
+    next_url = request.POST.get('next') or reverse('campaign_detail', args=[campaign_id])
+    return HttpResponseRedirect(next_url)
+
+
+@login_required
 def export_campaign_submissions(request, campaign_id):
-    campaign = get_object_or_404(Campaign, id=campaign_id)
+    campaign = _get_managed_campaign_or_403(request.user, campaign_id)
     submissions = campaign.submissions.select_related('submission_code')
 
     state_filter = request.GET.get('state', '')
@@ -152,7 +202,7 @@ def export_campaign_submissions(request, campaign_id):
 
 @login_required
 def raffle_view(request, campaign_id):
-    campaign = get_object_or_404(Campaign, id=campaign_id)
+    campaign = _get_managed_campaign_or_403(request.user, campaign_id)
     prizes = campaign.prizes.all()
 
     if not prizes.exists():
@@ -161,7 +211,8 @@ def raffle_view(request, campaign_id):
 
     segment_form = RaffleSegmentForm(request.POST or None)
 
-    submissions = campaign.submissions.all()
+    # Only valid submissions are eligible for raffles
+    submissions = campaign.submissions.filter(is_valid=True)
 
     if request.method == 'POST' and segment_form.is_valid():
         state = segment_form.cleaned_data.get('state')
@@ -169,7 +220,7 @@ def raffle_view(request, campaign_id):
         date_from = segment_form.cleaned_data.get('date_from')
         date_to = segment_form.cleaned_data.get('date_to')
 
-        filtered_submissions = campaign.submissions.all()
+        filtered_submissions = campaign.submissions.filter(is_valid=True)
         if state:
             filtered_submissions = filtered_submissions.filter(state=state)
         if county:
@@ -226,6 +277,8 @@ def raffle_view(request, campaign_id):
 @login_required
 def raffle_results(request, raffle_id):
     raffle = get_object_or_404(Raffle, id=raffle_id)
+    if not request.user.is_superuser and not raffle.campaign.managers.filter(id=request.user.id).exists():
+        raise PermissionDenied("You don't have access to this raffle.")
     winners = raffle.winners.select_related('submission', 'prize').order_by('prize__order', 'position')
 
     prizes_winners = {}
@@ -236,6 +289,7 @@ def raffle_results(request, raffle_id):
 
     return render(request, 'campaigns/raffle_results.html', {
         'raffle': raffle,
+        'campaign': raffle.campaign,
         'prizes_winners': prizes_winners,
         'winners': winners,
     })
@@ -244,12 +298,14 @@ def raffle_results(request, raffle_id):
 @login_required
 def export_raffle_winners(request, raffle_id):
     raffle = get_object_or_404(Raffle, id=raffle_id)
+    if not request.user.is_superuser and not raffle.campaign.managers.filter(id=request.user.id).exists():
+        raise PermissionDenied("You don't have access to this raffle.")
     return export_winners_csv(raffle)
 
 
 @login_required
 def import_codes_view(request, campaign_id):
-    campaign = get_object_or_404(Campaign, id=campaign_id)
+    campaign = _get_managed_campaign_or_403(request.user, campaign_id)
 
     if request.method == 'POST':
         form = CodeImportForm(request.POST, request.FILES)
@@ -282,7 +338,7 @@ def import_codes_view(request, campaign_id):
 @login_required
 def ajax_filter_count(request, campaign_id):
     """AJAX endpoint to get submission count for given filters."""
-    campaign = get_object_or_404(Campaign, id=campaign_id)
+    campaign = _get_managed_campaign_or_403(request.user, campaign_id)
 
     state = request.GET.get('state', '')
     county = request.GET.get('county', '')

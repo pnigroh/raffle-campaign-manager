@@ -19,8 +19,44 @@ class Campaign(models.Model):
         default=False,
         help_text="Allow the same email to submit multiple times."
     )
+
+    # --- Per-campaign dashboard branding ---
+    display_title = models.CharField(
+        max_length=200, blank=True,
+        help_text="Title shown in the dashboard sidebar/topbar when viewing this campaign. Falls back to the campaign name if blank."
+    )
+    logo = models.ImageField(
+        upload_to='campaign_logos/', blank=True, null=True,
+        help_text="Logo shown in the dashboard sidebar when viewing this campaign."
+    )
+    primary_color = models.CharField(
+        max_length=7, blank=True,
+        help_text="Brand accent color (hex, e.g. #e30613). Drives buttons, badges and highlights on this campaign's dashboard."
+    )
+    sidebar_color = models.CharField(
+        max_length=7, blank=True,
+        help_text="Sidebar background color (hex, e.g. #1a2035). Optional. Falls back to a dark default if blank."
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def brand_title(self):
+        return self.display_title or self.name
+
+    @property
+    def brand_primary(self):
+        return self.primary_color or '#4f8ef7'
+
+    @property
+    def brand_sidebar(self):
+        return self.sidebar_color or '#1a2035'
+
+    managers = models.ManyToManyField(
+        User, blank=True, related_name='managed_campaigns',
+        help_text="Users assigned here can view and manage this campaign and its submissions in the dashboard."
+    )
 
     class Meta:
         ordering = ['-created_at']
@@ -107,6 +143,17 @@ class Submission(models.Model):
     image_2 = models.ImageField(upload_to='submissions/%Y/%m/', blank=True, null=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
+
+    is_valid = models.BooleanField(
+        default=True,
+        help_text="Invalid submissions are excluded from raffles. Toggle from the dashboard or admin."
+    )
+    validated_at = models.DateTimeField(null=True, blank=True)
+    validated_by = models.ForeignKey(
+        User, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='validated_submissions',
+    )
+    invalidation_reason = models.CharField(max_length=200, blank=True)
 
     class Meta:
         ordering = ['-submitted_at']

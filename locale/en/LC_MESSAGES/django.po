@@ -1,0 +1,822 @@
+# English translations for raffle-campaign.
+# Copyright (C) 2026
+# This file is distributed under the same license as the raffle-campaign package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: raffle-campaign 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-09 16:58+0000\n"
+"PO-Revision-Date: 2026-05-09 16:43+0000\n"
+"Last-Translator: Admin\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: campaigns/templates/campaigns/base.html:413
+msgid "Panel de Campaña"
+msgstr "Campaign Panel"
+
+#: campaigns/templates/campaigns/base.html:413
+msgid "Plataforma de Campañas"
+msgstr "Campaign Platform"
+
+#: campaigns/templates/campaigns/base.html:419
+msgid "Principal"
+msgstr "Main"
+
+#: campaigns/templates/campaigns/base.html:421
+#: campaigns/templates/campaigns/base.html:443
+#: campaigns/templates/campaigns/campaign_detail.html:21
+#: campaigns/templates/campaigns/dashboard.html:4
+#: campaigns/templates/campaigns/dashboard.html:10
+#: campaigns/templates/campaigns/import_codes.html:14
+#: campaigns/templates/campaigns/raffle.html:14
+#: campaigns/templates/campaigns/raffle_results.html:14
+msgid "Tablero"
+msgstr "Dashboard"
+
+#: campaigns/templates/campaigns/base.html:424
+msgid "Administración"
+msgstr "Administration"
+
+#: campaigns/templates/campaigns/base.html:426
+msgid "Admin Django"
+msgstr "Django Admin"
+
+#: campaigns/templates/campaigns/base.html:431
+msgid "Área Admin Segura"
+msgstr "Secure Admin Area"
+
+#: campaigns/templates/campaigns/base.html:461
+msgid "Cerrar sesión"
+msgstr "Log out"
+
+#: campaigns/templates/campaigns/campaign_detail.html:14
+#: campaigns/templates/campaigns/dashboard.html:97
+msgid "Activa"
+msgstr "Active"
+
+#: campaigns/templates/campaigns/campaign_detail.html:16
+#: campaigns/templates/campaigns/dashboard.html:151
+msgid "Inactiva"
+msgstr "Inactive"
+
+#: campaigns/templates/campaigns/campaign_detail.html:28
+#: campaigns/templates/campaigns/import_codes.html:4
+#: campaigns/templates/campaigns/import_codes.html:16
+#: campaigns/templates/campaigns/import_codes.html:98
+msgid "Importar Códigos"
+msgstr "Import Codes"
+
+#: campaigns/templates/campaigns/campaign_detail.html:31
+#: campaigns/templates/campaigns/raffle.html:4
+#: campaigns/templates/campaigns/raffle.html:11
+#: campaigns/templates/campaigns/raffle.html:16
+msgid "Realizar Sorteo"
+msgstr "Run Raffle"
+
+#: campaigns/templates/campaigns/campaign_detail.html:47
+msgid "Participaciones Filtradas"
+msgstr "Filtered Entries"
+
+#: campaigns/templates/campaigns/campaign_detail.html:49
+#: campaigns/templates/campaigns/dashboard.html:44
+msgid "Total de Participaciones"
+msgstr "Total Entries"
+
+#: campaigns/templates/campaigns/campaign_detail.html:60
+#: campaigns/templates/campaigns/import_codes.html:189
+msgid "Códigos Disponibles"
+msgstr "Available Codes"
+
+#: campaigns/templates/campaigns/campaign_detail.html:69
+#: campaigns/templates/campaigns/import_codes.html:185
+msgid "Códigos Usados"
+msgstr "Used Codes"
+
+#: campaigns/templates/campaigns/campaign_detail.html:78
+msgid "Premios Configurados"
+msgstr "Configured Prizes"
+
+#: campaigns/templates/campaigns/campaign_detail.html:91
+msgid "Sin descripción."
+msgstr "No description."
+
+#: campaigns/templates/campaigns/campaign_detail.html:97
+msgid "Inicio:"
+msgstr "Start:"
+
+#: campaigns/templates/campaigns/campaign_detail.html:101
+msgid "Fin:"
+msgstr "End:"
+
+#: campaigns/templates/campaigns/campaign_detail.html:105
+msgid "Código requerido:"
+msgstr "Code required:"
+
+#: campaigns/templates/campaigns/campaign_detail.html:106
+msgid "Sí"
+msgstr "Yes"
+
+#: campaigns/templates/campaigns/campaign_detail.html:106
+msgid "No"
+msgstr "No"
+
+#: campaigns/templates/campaigns/campaign_detail.html:109
+msgid "URL de participación:"
+msgstr "Entry URL:"
+
+#: campaigns/templates/campaigns/campaign_detail.html:124
+msgid "Premios"
+msgstr "Prizes"
+
+#: campaigns/templates/campaigns/campaign_detail.html:126
+msgid "Editar Premios"
+msgstr "Edit Prizes"
+
+#: campaigns/templates/campaigns/campaign_detail.html:139
+#, python-format
+msgid "Cant: %(qty)s"
+msgstr "Qty: %(qty)s"
+
+#: campaigns/templates/campaigns/campaign_detail.html:140
+#, python-format
+msgid "Orden: %(order)s"
+msgstr "Order: %(order)s"
+
+#: campaigns/templates/campaigns/campaign_detail.html:151
+msgid "No hay premios configurados para esta campaña."
+msgstr "No prizes have been configured for this campaign."
+
+#: campaigns/templates/campaigns/campaign_detail.html:152
+msgid "Agrega premios"
+msgstr "Add prizes"
+
+#: campaigns/templates/campaigns/campaign_detail.html:153
+msgid "antes de realizar un sorteo."
+msgstr "before running a raffle."
+
+#: campaigns/templates/campaigns/campaign_detail.html:163
+msgid "Buscar"
+msgstr "Search"
+
+#: campaigns/templates/campaigns/campaign_detail.html:168
+msgid "Nombre, correo, teléfono..."
+msgstr "Name, email, phone..."
+
+#: campaigns/templates/campaigns/campaign_detail.html:172
+#: campaigns/templates/campaigns/raffle.html:64
+#: campaigns/templates/campaigns/raffle_results.html:141
+msgid "Departamento"
+msgstr "Department"
+
+#: campaigns/templates/campaigns/campaign_detail.html:174
+#: campaigns/templates/campaigns/raffle.html:66
+msgid "Todos"
+msgstr "All"
+
+#: campaigns/templates/campaigns/campaign_detail.html:181
+#: campaigns/templates/campaigns/dashboard.html:179
+#: campaigns/templates/campaigns/raffle.html:75
+#: campaigns/templates/campaigns/raffle_results.html:142
+msgid "Municipio"
+msgstr "Municipality"
+
+#: campaigns/templates/campaigns/campaign_detail.html:182
+#: campaigns/templates/campaigns/raffle.html:81
+msgid "Filtrar por municipio..."
+msgstr "Filter by municipality..."
+
+#: campaigns/templates/campaigns/campaign_detail.html:187
+msgid "Filtrar"
+msgstr "Filter"
+
+#: campaigns/templates/campaigns/campaign_detail.html:204
+#: campaigns/templates/campaigns/dashboard.html:62
+#: campaigns/templates/campaigns/dashboard.html:134
+msgid "Participaciones"
+msgstr "Entries"
+
+#: campaigns/templates/campaigns/campaign_detail.html:209
+msgid "Filtros activos"
+msgstr "Active filters"
+
+#: campaigns/templates/campaigns/campaign_detail.html:218
+#: campaigns/templates/campaigns/dashboard.html:175
+#: campaigns/templates/campaigns/raffle_results.html:138
+msgid "Nombre"
+msgstr "Name"
+
+#: campaigns/templates/campaigns/campaign_detail.html:219
+#: campaigns/templates/campaigns/dashboard.html:176
+#: campaigns/templates/campaigns/raffle_results.html:139
+msgid "Correo"
+msgstr "Email"
+
+#: campaigns/templates/campaigns/campaign_detail.html:220
+#: campaigns/templates/campaigns/raffle_results.html:140
+msgid "Teléfono"
+msgstr "Phone"
+
+#: campaigns/templates/campaigns/campaign_detail.html:221
+msgid "Foto"
+msgstr "Photo"
+
+#: campaigns/templates/campaigns/campaign_detail.html:222
+msgid "Validez"
+msgstr "Validity"
+
+#: campaigns/templates/campaigns/campaign_detail.html:223
+msgid "Código"
+msgstr "Code"
+
+#: campaigns/templates/campaigns/campaign_detail.html:224
+#: campaigns/templates/campaigns/dashboard.html:180
+#: campaigns/templates/campaigns/raffle_results.html:144
+msgid "Enviado"
+msgstr "Submitted"
+
+#: campaigns/templates/campaigns/campaign_detail.html:225
+#: campaigns/templates/campaigns/campaign_detail.html:316
+#: campaigns/templates/campaigns/dashboard.html:67
+#: campaigns/templates/campaigns/dashboard.html:138
+msgid "Acciones"
+msgstr "Actions"
+
+#: campaigns/templates/campaigns/campaign_detail.html:237
+msgid "Ver factura"
+msgstr "View receipt"
+
+#: campaigns/templates/campaigns/campaign_detail.html:247
+msgid "Válida"
+msgstr "Valid"
+
+#: campaigns/templates/campaigns/campaign_detail.html:251
+msgid "Inválida"
+msgstr "Invalid"
+
+#: campaigns/templates/campaigns/campaign_detail.html:268
+msgid "Marcar como inválida"
+msgstr "Mark as invalid"
+
+#: campaigns/templates/campaigns/campaign_detail.html:272
+msgid "Marcar como válida"
+msgstr "Mark as valid"
+
+#: campaigns/templates/campaigns/campaign_detail.html:277
+#, fuzzy
+#| msgid "Editar Premios"
+msgid "Editar en admin"
+msgstr "Edit Prizes"
+
+#: campaigns/templates/campaigns/campaign_detail.html:287
+msgid "No se encontraron participaciones con los filtros aplicados."
+msgstr "No entries found matching the applied filters."
+
+#: campaigns/templates/campaigns/campaign_detail.html:289
+msgid "No se encontraron participaciones."
+msgstr "No entries found."
+
+#: campaigns/templates/campaigns/campaign_detail.html:302
+msgid "Historial de Sorteos"
+msgstr "Raffle History"
+
+#: campaigns/templates/campaigns/campaign_detail.html:304
+msgid "Nuevo Sorteo"
+msgstr "New Raffle"
+
+#: campaigns/templates/campaigns/campaign_detail.html:311
+msgid "Fecha"
+msgstr "Date"
+
+#: campaigns/templates/campaigns/campaign_detail.html:312
+#: campaigns/templates/campaigns/raffle_results.html:47
+msgid "Realizado por"
+msgstr "Run by"
+
+#: campaigns/templates/campaigns/campaign_detail.html:313
+msgid "Participantes"
+msgstr "Participants"
+
+#: campaigns/templates/campaigns/campaign_detail.html:314
+msgid "Ganadores"
+msgstr "Winners"
+
+#: campaigns/templates/campaigns/campaign_detail.html:315
+msgid "Filtros"
+msgstr "Filters"
+
+#: campaigns/templates/campaigns/campaign_detail.html:333
+#: campaigns/templates/campaigns/raffle_results.html:61
+#, python-format
+msgid "Depto: %(val)s"
+msgstr "Dept: %(val)s"
+
+#: campaigns/templates/campaigns/campaign_detail.html:334
+#: campaigns/templates/campaigns/raffle_results.html:64
+#, python-format
+msgid "Mpio: %(val)s"
+msgstr "Muni: %(val)s"
+
+#: campaigns/templates/campaigns/campaign_detail.html:335
+#: campaigns/templates/campaigns/raffle_results.html:67
+#, python-format
+msgid "Desde: %(val)s"
+msgstr "From: %(val)s"
+
+#: campaigns/templates/campaigns/campaign_detail.html:336
+#: campaigns/templates/campaigns/raffle_results.html:70
+#, python-format
+msgid "Hasta: %(val)s"
+msgstr "To: %(val)s"
+
+#: campaigns/templates/campaigns/campaign_detail.html:338
+msgid "Ninguno"
+msgstr "None"
+
+#: campaigns/templates/campaigns/campaign_detail.html:345
+msgid "Resultados"
+msgstr "Results"
+
+#: campaigns/templates/campaigns/campaign_detail.html:357
+msgid "Aún no se han realizado sorteos."
+msgstr "No raffles have been run yet."
+
+#: campaigns/templates/campaigns/dashboard.html:5
+msgid "Vista General del Tablero"
+msgstr "Dashboard Overview"
+
+#: campaigns/templates/campaigns/dashboard.html:13
+msgid "Inicio"
+msgstr "Home"
+
+#: campaigns/templates/campaigns/dashboard.html:26
+msgid "Total de Campañas"
+msgstr "Total Campaigns"
+
+#: campaigns/templates/campaigns/dashboard.html:35
+#: campaigns/templates/campaigns/dashboard.html:52
+msgid "Campañas Activas"
+msgstr "Active Campaigns"
+
+#: campaigns/templates/campaigns/dashboard.html:54
+msgid "Nueva Campaña"
+msgstr "New Campaign"
+
+#: campaigns/templates/campaigns/dashboard.html:61
+#: campaigns/templates/campaigns/dashboard.html:133
+#: campaigns/templates/campaigns/dashboard.html:177
+#: campaigns/templates/campaigns/import_codes.html:170
+#: campaigns/templates/campaigns/raffle_results.html:39
+msgid "Campaña"
+msgstr "Campaign"
+
+#: campaigns/templates/campaigns/dashboard.html:63
+msgid "Códigos"
+msgstr "Codes"
+
+#: campaigns/templates/campaigns/dashboard.html:64
+#: campaigns/templates/campaigns/dashboard.html:135
+msgid "Fecha Inicio"
+msgstr "Start Date"
+
+#: campaigns/templates/campaigns/dashboard.html:65
+#: campaigns/templates/campaigns/dashboard.html:136
+msgid "Fecha Fin"
+msgstr "End Date"
+
+#: campaigns/templates/campaigns/dashboard.html:66
+#: campaigns/templates/campaigns/dashboard.html:137
+#: campaigns/templates/campaigns/dashboard.html:178
+msgid "Estado"
+msgstr "Status"
+
+#: campaigns/templates/campaigns/dashboard.html:84
+msgid "disponibles"
+msgstr "available"
+
+#: campaigns/templates/campaigns/dashboard.html:86
+msgid "No requerido"
+msgstr "Not required"
+
+#: campaigns/templates/campaigns/dashboard.html:102
+#: campaigns/templates/campaigns/dashboard.html:154
+msgid "Ver"
+msgstr "View"
+
+#: campaigns/templates/campaigns/dashboard.html:105
+msgid "Sorteo"
+msgstr "Raffle"
+
+#: campaigns/templates/campaigns/dashboard.html:114
+msgid ""
+"Sin campañas activas. <a href=\"/admin/campaigns/campaign/add/\">Crea una</"
+"a>."
+msgstr ""
+"No active campaigns. <a href=\"/admin/campaigns/campaign/add/\">Create one</"
+"a>."
+
+#: campaigns/templates/campaigns/dashboard.html:127
+msgid "Campañas Inactivas"
+msgstr "Inactive Campaigns"
+
+#: campaigns/templates/campaigns/dashboard.html:168
+msgid "Participaciones Recientes"
+msgstr "Recent Entries"
+
+#: campaigns/templates/campaigns/dashboard.html:169
+#, python-format
+msgid "%(count)s mostradas"
+msgstr "%(count)s shown"
+
+#: campaigns/templates/campaigns/dashboard.html:203
+msgid "Aún no hay participaciones."
+msgstr "No entries yet."
+
+#: campaigns/templates/campaigns/import_codes.html:5
+#: campaigns/templates/campaigns/import_codes.html:11
+msgid "Importar Códigos de Participación"
+msgstr "Import Submission Codes"
+
+#: campaigns/templates/campaigns/import_codes.html:21
+#: campaigns/templates/campaigns/raffle.html:21
+#: campaigns/templates/campaigns/raffle_results.html:22
+#: campaigns/templates/campaigns/raffle_results.html:196
+msgid "Volver a la Campaña"
+msgstr "Back to Campaign"
+
+#: campaigns/templates/campaigns/import_codes.html:31
+msgid "Subir Archivo CSV"
+msgstr "Upload CSV File"
+
+#: campaigns/templates/campaigns/import_codes.html:51
+msgid "Archivo CSV"
+msgstr "CSV File"
+
+#: campaigns/templates/campaigns/import_codes.html:60
+msgid "Haz clic para elegir un archivo o arrástralo aquí"
+msgstr "Click to choose a file or drag it here"
+
+#: campaigns/templates/campaigns/import_codes.html:61
+msgid "Solo archivos CSV · Codificación UTF-8 o UTF-8 BOM"
+msgstr "CSV files only · UTF-8 or UTF-8 BOM encoding"
+
+#: campaigns/templates/campaigns/import_codes.html:87
+msgid "Omitir códigos duplicados"
+msgstr "Skip duplicate codes"
+
+#: campaigns/templates/campaigns/import_codes.html:88
+msgid "recomendado"
+msgstr "recommended"
+
+#: campaigns/templates/campaigns/import_codes.html:91
+msgid ""
+"Si se desmarca, importar un código duplicado generará un error en esa fila."
+msgstr ""
+"If unchecked, importing a duplicate code will generate an error for that row."
+
+#: campaigns/templates/campaigns/import_codes.html:101
+msgid "Cancelar"
+msgstr "Cancel"
+
+#: campaigns/templates/campaigns/import_codes.html:113
+msgid "Instrucciones del Formato CSV"
+msgstr "CSV Format Instructions"
+
+#: campaigns/templates/campaigns/import_codes.html:116
+msgid "Tu archivo CSV puede tener cualquiera de los siguientes formatos:"
+msgstr "Your CSV file can use any of the following formats:"
+
+#: campaigns/templates/campaigns/import_codes.html:120
+#: campaigns/templates/campaigns/import_codes.html:131
+#: campaigns/templates/campaigns/import_codes.html:141
+msgid "Opción"
+msgstr "Option"
+
+#: campaigns/templates/campaigns/import_codes.html:121
+msgid "Una columna con encabezado"
+msgstr "Single column with header"
+
+#: campaigns/templates/campaigns/import_codes.html:132
+msgid "Una columna sin encabezado"
+msgstr "Single column without header"
+
+#: campaigns/templates/campaigns/import_codes.html:142
+msgid "Varias columnas (se usa la primera)"
+msgstr "Multiple columns (first one used)"
+
+#: campaigns/templates/campaigns/import_codes.html:152
+msgid "Consejos:"
+msgstr "Tips:"
+
+#: campaigns/templates/campaigns/import_codes.html:154
+msgid "Elimina espacios al inicio o final de los códigos"
+msgstr "Remove leading or trailing spaces from codes"
+
+#: campaigns/templates/campaigns/import_codes.html:155
+msgid "Los códigos distinguen mayúsculas y minúsculas"
+msgstr "Codes are case-sensitive"
+
+#: campaigns/templates/campaigns/import_codes.html:156
+msgid "La longitud máxima del código es 100 caracteres"
+msgstr "Maximum code length is 100 characters"
+
+#: campaigns/templates/campaigns/import_codes.html:157
+msgid "Guarda tu archivo como CSV con codificación UTF-8"
+msgstr "Save your file as CSV with UTF-8 encoding"
+
+#: campaigns/templates/campaigns/import_codes.html:166
+msgid "Estadísticas Actuales de Códigos"
+msgstr "Current Code Statistics"
+
+#: campaigns/templates/campaigns/import_codes.html:174
+msgid "Validación de Código"
+msgstr "Code Validation"
+
+#: campaigns/templates/campaigns/import_codes.html:176
+msgid "Requerido"
+msgstr "Required"
+
+#: campaigns/templates/campaigns/import_codes.html:176
+msgid "Opcional"
+msgstr "Optional"
+
+#: campaigns/templates/campaigns/import_codes.html:181
+msgid "Total de Códigos"
+msgstr "Total Codes"
+
+#: campaigns/templates/campaigns/login.html:6
+#: campaigns/templates/campaigns/login.html:199
+msgid "Iniciar sesión"
+msgstr "Log in"
+
+#: campaigns/templates/campaigns/login.html:147
+msgid "Plataforma de Gestión de Campañas"
+msgstr "Campaign Management Platform"
+
+#: campaigns/templates/campaigns/login.html:151
+msgid "Bienvenido de nuevo"
+msgstr "Welcome back"
+
+#: campaigns/templates/campaigns/login.html:152
+msgid "Inicia sesión para gestionar tus campañas"
+msgstr "Sign in to manage your campaigns"
+
+#: campaigns/templates/campaigns/login.html:157
+msgid "Usuario o contraseña incorrectos. Inténtalo de nuevo."
+msgstr "Incorrect username or password. Please try again."
+
+#: campaigns/templates/campaigns/login.html:171
+#: campaigns/templates/campaigns/login.html:176
+msgid "Usuario"
+msgstr "Username"
+
+#: campaigns/templates/campaigns/login.html:187
+#: campaigns/templates/campaigns/login.html:190
+msgid "Contraseña"
+msgstr "Password"
+
+#: campaigns/templates/campaigns/login.html:205
+msgid "Acceso Admin Seguro"
+msgstr "Secure Admin Access"
+
+#: campaigns/templates/campaigns/raffle.html:5
+#, python-format
+msgid "Sorteo: %(name)s"
+msgstr "Raffle: %(name)s"
+
+#: campaigns/templates/campaigns/raffle.html:30
+msgid "Importante:"
+msgstr "Important:"
+
+#: campaigns/templates/campaigns/raffle.html:30
+msgid ""
+"Una vez realizado el sorteo, no se puede deshacer. Los ganadores se "
+"seleccionan aleatoriamente y quedan registrados de forma permanente. "
+"Asegúrate de que los filtros y las cantidades de premios sean correctos "
+"antes de continuar."
+msgstr ""
+"Once the raffle is run, it cannot be undone. Winners are selected randomly "
+"and permanently recorded. Make sure filters and prize quantities are correct "
+"before continuing."
+
+#: campaigns/templates/campaigns/raffle.html:44
+msgid "Filtros de Participantes"
+msgstr "Entry Filters"
+
+#: campaigns/templates/campaigns/raffle.html:48
+msgid ""
+"Filtra qué participaciones son elegibles para este sorteo. Deja todo en "
+"blanco para incluir a todos."
+msgstr ""
+"Filter which entries are eligible for this raffle. Leave all fields blank to "
+"include everyone."
+
+#: campaigns/templates/campaigns/raffle.html:54
+msgid "Participantes en el Pool Actual"
+msgstr "Participants in Current Pool"
+
+#: campaigns/templates/campaigns/raffle.html:59
+msgid "participantes coinciden con los filtros"
+msgstr "participants match the filters"
+
+#: campaigns/templates/campaigns/raffle.html:88
+msgid "Enviado desde"
+msgstr "Submitted from"
+
+#: campaigns/templates/campaigns/raffle.html:97
+msgid "Enviado hasta"
+msgstr "Submitted until"
+
+#: campaigns/templates/campaigns/raffle.html:109
+msgid "Notas del Sorteo"
+msgstr "Raffle Notes"
+
+#: campaigns/templates/campaigns/raffle.html:109
+msgid "opcional"
+msgstr "optional"
+
+#: campaigns/templates/campaigns/raffle.html:115
+msgid "Notas opcionales sobre este sorteo..."
+msgstr "Optional notes about this raffle..."
+
+#: campaigns/templates/campaigns/raffle.html:127
+msgid "Selección de Premios y Cantidades"
+msgstr "Prize Selection and Quantities"
+
+#: campaigns/templates/campaigns/raffle.html:131
+msgid ""
+"Define cuántos ganadores sortear por cada premio. Un participante solo puede "
+"ganar una vez en todos los premios."
+msgstr ""
+"Set how many winners to draw per prize. A participant can only win once "
+"across all prizes."
+
+#: campaigns/templates/campaigns/raffle.html:145
+#, python-format
+msgid "%(qty)s disp."
+msgstr "%(qty)s avail."
+
+#: campaigns/templates/campaigns/raffle.html:149
+msgid "Ganadores a sortear:"
+msgstr "Winners to draw:"
+
+#: campaigns/templates/campaigns/raffle.html:172
+msgid "Total de Ganadores a Sortear"
+msgstr "Total Winners to Draw"
+
+#: campaigns/templates/campaigns/raffle.html:173
+msgid "Entre todos los premios"
+msgstr "Across all prizes"
+
+#: campaigns/templates/campaigns/raffle.html:188
+msgid "¿Listo para Sortear Ganadores?"
+msgstr "Ready to Draw Winners?"
+
+#: campaigns/templates/campaigns/raffle.html:190
+msgid "participantes en el pool"
+msgstr "participants in the pool"
+
+#: campaigns/templates/campaigns/raffle.html:191
+msgid "ganadores a sortear"
+msgstr "winners to draw"
+
+#: campaigns/templates/campaigns/raffle.html:202
+msgid "Realizar Sorteo Ahora"
+msgstr "Run Raffle Now"
+
+#: campaigns/templates/campaigns/raffle.html:205
+msgid "Esta acción no se puede deshacer"
+msgstr "This action cannot be undone"
+
+#: campaigns/templates/campaigns/raffle.html:299
+msgid "Ingresa una cantidad de al menos 1 para al menos un premio."
+msgstr "Enter a quantity of at least 1 for at least one prize."
+
+#: campaigns/templates/campaigns/raffle.html:303
+msgid "No hay participantes que coincidan con los filtros actuales."
+msgstr "No participants match the current filters."
+
+#: campaigns/templates/campaigns/raffle.html:308
+msgid "Estás a punto de sortear"
+msgstr "You are about to draw"
+
+#: campaigns/templates/campaigns/raffle.html:308
+msgid "ganador(es) de un pool de"
+msgstr "winner(s) from a pool of"
+
+#: campaigns/templates/campaigns/raffle.html:308
+msgid "participantes."
+msgstr "participants."
+
+#: campaigns/templates/campaigns/raffle.html:309
+msgid "Esta acción no se puede deshacer. ¿Continuar?"
+msgstr "This action cannot be undone. Continue?"
+
+#: campaigns/templates/campaigns/raffle_results.html:4
+#: campaigns/templates/campaigns/raffle_results.html:5
+#: campaigns/templates/campaigns/raffle_results.html:11
+#: campaigns/templates/campaigns/raffle_results.html:16
+msgid "Resultados del Sorteo"
+msgstr "Raffle Results"
+
+#: campaigns/templates/campaigns/raffle_results.html:25
+#: campaigns/templates/campaigns/raffle_results.html:202
+msgid "Exportar Ganadores CSV"
+msgstr "Export Winners CSV"
+
+#: campaigns/templates/campaigns/raffle_results.html:34
+msgid "Información del Sorteo"
+msgstr "Raffle Information"
+
+#: campaigns/templates/campaigns/raffle_results.html:43
+msgid "Fecha del Sorteo"
+msgstr "Raffle Date"
+
+#: campaigns/templates/campaigns/raffle_results.html:51
+msgid "Pool de Participantes"
+msgstr "Participant Pool"
+
+#: campaigns/templates/campaigns/raffle_results.html:52
+#, python-format
+msgid "%(count)s participantes"
+msgstr "%(count)s participants"
+
+#: campaigns/templates/campaigns/raffle_results.html:59
+msgid "Filtros aplicados:"
+msgstr "Applied filters:"
+
+#: campaigns/templates/campaigns/raffle_results.html:78
+msgid "Notas:"
+msgstr "Notes:"
+
+#: campaigns/templates/campaigns/raffle_results.html:93
+msgid "Total de Participantes"
+msgstr "Total Participants"
+
+#: campaigns/templates/campaigns/raffle_results.html:102
+msgid "Total de Ganadores"
+msgstr "Total Winners"
+
+#: campaigns/templates/campaigns/raffle_results.html:111
+msgid "Categorías de Premio"
+msgstr "Prize Categories"
+
+#: campaigns/templates/campaigns/raffle_results.html:131
+#, python-format
+msgid "%(count)s ganador(es)"
+msgstr "%(count)s winner(s)"
+
+#: campaigns/templates/campaigns/raffle_results.html:137
+msgid "Lugar"
+msgstr "Place"
+
+#: campaigns/templates/campaigns/raffle_results.html:143
+msgid "Código de Participación"
+msgstr "Submission Code"
+
+#: campaigns/templates/campaigns/raffle_results.html:188
+msgid "No se registraron ganadores para este sorteo."
+msgstr "No winners were recorded for this raffle."
+
+#: campaigns/templates/campaigns/raffle_results.html:199
+msgid "Realizar Otro Sorteo"
+msgstr "Run Another Raffle"
+
+#: campaigns/templates/campaigns/submission_success.html:6
+msgid "¡Participación Enviada!"
+msgstr "Entry Submitted!"
+
+#: campaigns/templates/campaigns/submission_success.html:178
+msgid "¡Ya estás participando!"
+msgstr "You're in the running!"
+
+#: campaigns/templates/campaigns/submission_success.html:185
+msgid ""
+"Tu participación fue enviada exitosamente. ¡Ya estás en la carrera para "
+"ganar! Nos pondremos en contacto con los ganadores directamente usando la "
+"información que proporcionaste."
+msgstr ""
+"Your entry was successfully submitted. You're in the running to win! We will "
+"contact winners directly using the information you provided."
+
+#: campaigns/templates/campaigns/submission_success.html:191
+msgid "Revisa tu bandeja de entrada para confirmar"
+msgstr "Check your inbox for confirmation"
+
+#: campaigns/templates/campaigns/submission_success.html:195
+msgid "Los ganadores se anuncian al finalizar la campaña"
+msgstr "Winners are announced when the campaign ends"
+
+#: campaigns/templates/campaigns/submission_success.html:201
+msgid "Tu información personal está segura y solo se usará para el sorteo."
+msgstr ""
+"Your personal information is secure and will only be used for the raffle."
+
+#: campaigns/templates/campaigns/submission_success.html:207
+msgid "Impulsado por RaffleManager"
+msgstr "Powered by RaffleManager"

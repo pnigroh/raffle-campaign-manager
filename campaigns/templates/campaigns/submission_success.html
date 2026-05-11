@@ -1,11 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
+{% load i18n %}<!DOCTYPE html>
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Entry Submitted! - {{ campaign.name }}</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <title>{% trans "¡Participación Enviada!" %} - {{ campaign.name }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" crossorigin="anonymous">
   <style>
     body {
       background: linear-gradient(160deg, #f0f4ff 0%, #fafbff 60%, #f0f4ff 100%);
@@ -175,39 +175,38 @@
       <i class="bi bi-check-lg"></i>
     </div>
 
-    <h1>You're In!</h1>
+    <h1>{% trans "¡Ya estás participando!" %}</h1>
 
     <div class="campaign-name">
       <i class="bi bi-megaphone-fill me-1"></i>{{ campaign.name }}
     </div>
 
     <p>
-      Your entry has been successfully submitted. You're now in the running to win!
-      We'll contact winners directly using the contact information you provided.
+      {% trans "Tu participación fue enviada exitosamente. ¡Ya estás en la carrera para ganar! Nos pondremos en contacto con los ganadores directamente usando la información que proporcionaste." %}
     </p>
 
     <div class="info-tiles">
       <div class="info-tile">
         <i class="bi bi-envelope-check-fill"></i>
-        Check your inbox for confirmation
+        {% trans "Revisa tu bandeja de entrada para confirmar" %}
       </div>
       <div class="info-tile">
         <i class="bi bi-clock-fill"></i>
-        Winners announced after campaign ends
+        {% trans "Los ganadores se anuncian al finalizar la campaña" %}
       </div>
     </div>
 
     <p class="mb-0" style="font-size:0.875rem; color:#94a3b8;">
       <i class="bi bi-shield-check me-1 text-success"></i>
-      Your personal information is secure and will only be used for raffle purposes.
+      {% trans "Tu información personal está segura y solo se usará para el sorteo." %}
     </p>
   </div>
 </div>
 
 <div class="footer-note pb-3">
-  &copy; {{ campaign.name }} &mdash; Powered by RaffleManager
+  &copy; {{ campaign.name }} &mdash; {% trans "Impulsado por RaffleManager" %}
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>

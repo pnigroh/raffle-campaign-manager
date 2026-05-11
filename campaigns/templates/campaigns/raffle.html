@@ -1,23 +1,24 @@
 {% extends "campaigns/base.html" %}
+{% load i18n %}
 
-{% block title %}Run Raffle - {{ campaign.name }}{% endblock %}
-{% block topbar_title %}Run Raffle: {{ campaign.name }}{% endblock %}
+{% block title %}{% trans "Realizar Sorteo" %} - {{ campaign.name }}{% endblock %}
+{% block topbar_title %}{% blocktrans with name=campaign.name %}Sorteo: {{ name }}{% endblocktrans %}{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
     <div>
-      <h1><i class="bi bi-stars me-2 text-warning"></i>Run Raffle</h1>
+      <h1><i class="bi bi-stars me-2 text-warning"></i>{% trans "Realizar Sorteo" %}</h1>
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">{% trans "Tablero" %}</a></li>
           <li class="breadcrumb-item"><a href="{% url 'campaign_detail' campaign.id %}">{{ campaign.name }}</a></li>
-          <li class="breadcrumb-item active">Run Raffle</li>
+          <li class="breadcrumb-item active">{% trans "Realizar Sorteo" %}</li>
         </ol>
       </nav>
     </div>
     <a href="{% url 'campaign_detail' campaign.id %}" class="btn btn-outline-secondary">
-      <i class="bi bi-arrow-left me-1"></i>Back to Campaign
+      <i class="bi bi-arrow-left me-1"></i>{% trans "Volver a la Campaña" %}
     </a>
   </div>
 </div>
@@ -26,8 +27,7 @@
 <div class="alert alert-warning d-flex align-items-start gap-3 mb-4" style="border-left: 4px solid #f59e0b; border-radius: 12px;">
   <i class="bi bi-exclamation-triangle-fill text-warning fs-5 mt-1 flex-shrink-0"></i>
   <div>
-    <strong>Important:</strong> Once a raffle is conducted, it cannot be undone. Winners are randomly selected and permanently recorded.
-    Make sure your filters and prize quantities are correct before proceeding.
+    <strong>{% trans "Importante:" %}</strong> {% trans "Una vez realizado el sorteo, no se puede deshacer. Los ganadores se seleccionan aleatoriamente y quedan registrados de forma permanente. Asegúrate de que los filtros y las cantidades de premios sean correctos antes de continuar." %}
   </div>
 </div>
 
@@ -41,29 +41,29 @@
       <!-- Participant Pool Card -->
       <div class="card mb-4">
         <div class="card-header">
-          <i class="bi bi-funnel me-2 text-primary"></i>Participant Filters
+          <i class="bi bi-funnel me-2 text-primary"></i>{% trans "Filtros de Participantes" %}
         </div>
         <div class="card-body">
           <p class="text-muted" style="font-size:0.85rem;">
-            Filter which submissions are eligible for this raffle. Leave all blank to include everyone.
+            {% trans "Filtra qué participaciones son elegibles para este sorteo. Deja todo en blanco para incluir a todos." %}
           </p>
 
           <!-- Live Count Badge -->
           <div class="p-3 rounded-3 mb-4 text-center" style="background: linear-gradient(135deg, #1a2035, #2d3a5e);">
             <div style="color:rgba(255,255,255,0.6); font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.35rem;">
-              <i class="bi bi-people-fill me-1"></i>Current Participant Pool
+              <i class="bi bi-people-fill me-1"></i>{% trans "Participantes en el Pool Actual" %}
             </div>
             <div id="poolCount" style="font-size:2.5rem; font-weight:800; color:#4f8ef7; line-height:1;">
               {{ total_submissions }}
             </div>
-            <div style="color:rgba(255,255,255,0.5); font-size:0.8rem; margin-top:0.25rem;">participants match filters</div>
+            <div style="color:rgba(255,255,255,0.5); font-size:0.8rem; margin-top:0.25rem;">{% trans "participantes coinciden con los filtros" %}</div>
           </div>
 
           <!-- State Filter -->
           <div class="mb-3">
-            <label class="form-label">State</label>
+            <label class="form-label">{% trans "Departamento" %}</label>
             <select name="state" id="id_state" class="form-select filter-field">
-              <option value="">All States</option>
+              <option value="">{% trans "Todos" %}</option>
               {% for s in states %}
                 <option value="{{ s }}">{{ s }}</option>
               {% endfor %}
@@ -72,20 +72,20 @@
 
           <!-- County Filter -->
           <div class="mb-3">
-            <label class="form-label">County</label>
+            <label class="form-label">{% trans "Municipio" %}</label>
             <input
               type="text"
               name="county"
               id="id_county"
               class="form-control filter-field"
-              placeholder="Filter by county..."
+              placeholder="{% trans "Filtrar por municipio..." %}"
             >
           </div>
 
           <!-- Date Filters -->
           <div class="row g-2 mb-3">
             <div class="col-6">
-              <label class="form-label">Submitted From</label>
+              <label class="form-label">{% trans "Enviado desde" %}</label>
               <input
                 type="date"
                 name="date_from"
@@ -94,7 +94,7 @@
               >
             </div>
             <div class="col-6">
-              <label class="form-label">Submitted To</label>
+              <label class="form-label">{% trans "Enviado hasta" %}</label>
               <input
                 type="date"
                 name="date_to"
@@ -106,13 +106,13 @@
 
           <!-- Notes -->
           <div class="mb-0">
-            <label class="form-label">Raffle Notes <span class="text-muted fw-normal">(optional)</span></label>
+            <label class="form-label">{% trans "Notas del Sorteo" %} <span class="text-muted fw-normal">({% trans "opcional" %})</span></label>
             <textarea
               name="notes"
               id="id_notes"
               class="form-control"
               rows="2"
-              placeholder="Optional notes about this raffle draw..."
+              placeholder="{% trans "Notas opcionales sobre este sorteo..." %}"
             ></textarea>
           </div>
         </div>
@@ -124,11 +124,11 @@
     <div class="col-lg-7">
       <div class="card mb-4">
         <div class="card-header">
-          <i class="bi bi-trophy me-2 text-warning"></i>Prize Selection &amp; Quantities
+          <i class="bi bi-trophy me-2 text-warning"></i>{% trans "Selección de Premios y Cantidades" %}
         </div>
         <div class="card-body">
           <p class="text-muted" style="font-size:0.85rem;">
-            Set how many winners to draw for each prize. A winner can only win once across all prizes.
+            {% trans "Define cuántos ganadores sortear por cada premio. Un participante solo puede ganar una vez en todos los premios." %}
           </p>
 
           <div class="row g-3">
@@ -142,11 +142,11 @@
                       <div class="text-muted" style="font-size:0.8rem;">{{ prize.description }}</div>
                     {% endif %}
                   </div>
-                  <span class="badge bg-warning text-dark ms-2">{{ prize.quantity }} avail.</span>
+                  <span class="badge bg-warning text-dark ms-2">{% blocktrans with qty=prize.quantity %}{{ qty }} disp.{% endblocktrans %}</span>
                 </div>
                 <div class="d-flex align-items-center gap-2 mt-2">
                   <label class="form-label mb-0 text-muted" style="font-size:0.8rem; white-space:nowrap;">
-                    Winners to draw:
+                    {% trans "Ganadores a sortear:" %}
                   </label>
                   <input
                     type="number"
@@ -169,8 +169,8 @@
           <!-- Summary -->
           <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="background:#f8fafc; border: 1px solid #e9ecef;">
             <div>
-              <div class="fw-semibold text-dark">Total Winners to Draw</div>
-              <div class="text-muted" style="font-size:0.82rem;">Across all prizes</div>
+              <div class="fw-semibold text-dark">{% trans "Total de Ganadores a Sortear" %}</div>
+              <div class="text-muted" style="font-size:0.82rem;">{% trans "Entre todos los premios" %}</div>
             </div>
             <div style="font-size:1.75rem; font-weight:800; color:#4f8ef7;" id="totalWinnersCount">0</div>
           </div>
@@ -185,10 +185,10 @@
               <i class="bi bi-stars text-white fs-5"></i>
             </div>
             <div>
-              <div class="fw-bold text-dark mb-1">Ready to Draw Winners?</div>
+              <div class="fw-bold text-dark mb-1">{% trans "¿Listo para Sortear Ganadores?" %}</div>
               <div class="text-muted" style="font-size:0.85rem;">
-                <span id="summaryPool" class="fw-semibold text-dark">{{ total_submissions }}</span> participants in pool &bull;
-                <span id="summaryWinners" class="fw-semibold text-dark">0</span> winners to be drawn
+                <span id="summaryPool" class="fw-semibold text-dark">{{ total_submissions }}</span> {% trans "participantes en el pool" %} &bull;
+                <span id="summaryWinners" class="fw-semibold text-dark">0</span> {% trans "ganadores a sortear" %}
               </div>
             </div>
           </div>
@@ -199,10 +199,10 @@
             id="runRaffleBtn"
             onclick="return confirmRaffle()"
           >
-            <i class="bi bi-stars me-2"></i>Conduct Raffle Now
+            <i class="bi bi-stars me-2"></i>{% trans "Realizar Sorteo Ahora" %}
           </button>
           <div class="text-center mt-2" style="font-size:0.78rem; color:#92400e;">
-            <i class="bi bi-exclamation-circle me-1"></i>This action cannot be undone
+            <i class="bi bi-exclamation-circle me-1"></i>{% trans "Esta acción no se puede deshacer" %}
           </div>
         </div>
       </div>
@@ -296,17 +296,17 @@
     const winners = parseInt(totalWinnersEl.textContent) || 0;
 
     if (winners === 0) {
-      alert('Please enter a quantity of at least 1 for at least one prize.');
+      alert('{% trans "Ingresa una cantidad de al menos 1 para al menos un premio." %}');
       return false;
     }
     if (pool === 0) {
-      alert('There are no participants matching your current filters.');
+      alert('{% trans "No hay participantes que coincidan con los filtros actuales." %}');
       return false;
     }
 
     return confirm(
-      `You are about to draw ${winners} winner(s) from a pool of ${pool} participants.\n\n` +
-      `This action cannot be undone. Proceed?`
+      `{% trans "Estás a punto de sortear" %} ${winners} {% trans "ganador(es) de un pool de" %} ${pool} {% trans "participantes." %}\n\n` +
+      `{% trans "Esta acción no se puede deshacer. ¿Continuar?" %}`
     );
   }
 
