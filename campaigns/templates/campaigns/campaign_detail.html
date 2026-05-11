@@ -172,16 +172,18 @@
   </div>
 </div>
 {% else %}
-<div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
-  <i class="bi bi-exclamation-triangle-fill"></i>
-  <span>{% trans "No hay premios configurados para esta campaña." %}
-    <a href="#" class="alert-link"
-       data-bs-toggle="modal" data-bs-target="#prizeModal"
-       data-prize-action="add"
-       data-prize-action-url="{% url 'prize_add' campaign.id %}"
-       data-next-order="{{ next_prize_order }}">{% trans "Agrega premios" %}</a>
-    {% trans "antes de realizar un sorteo." %}
+<div class="alert alert-warning d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+  <span>
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    {% trans "No hay premios configurados para esta campaña. Añade premios antes de realizar un sorteo." %}
   </span>
+  <button type="button" class="btn btn-sm btn-primary"
+          data-bs-toggle="modal" data-bs-target="#prizeModal"
+          data-prize-action="add"
+          data-prize-action-url="{% url 'prize_add' campaign.id %}"
+          data-next-order="{{ next_prize_order }}">
+    <i class="bi bi-plus-lg me-1"></i>{% trans "Añadir Premio" %}
+  </button>
 </div>
 {% endif %}
 
