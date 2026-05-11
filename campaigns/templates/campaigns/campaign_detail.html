@@ -404,7 +404,7 @@
   const prizeForm = document.getElementById('prizeForm');
   const prizeTitle = document.getElementById('prizeModalTitle');
 
-  if (prizeModal && prizeForm) {
+  if (prizeModal && prizeForm && prizeTitle) {
     prizeModal.addEventListener('show.bs.modal', (e) => {
       const trigger = e.relatedTarget;
       if (!trigger) return;
@@ -430,7 +430,7 @@
   const prizeDeleteForm = document.getElementById('prizeDeleteForm');
   const prizeDeleteName = document.getElementById('prizeDeleteName');
 
-  if (prizeDeleteModal && prizeDeleteForm) {
+  if (prizeDeleteModal && prizeDeleteForm && prizeDeleteName) {
     prizeDeleteModal.addEventListener('show.bs.modal', (e) => {
       const trigger = e.relatedTarget;
       if (!trigger) return;
