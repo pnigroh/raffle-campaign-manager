@@ -177,6 +177,7 @@ class PrizeDeleteTests(TestCase):
             reverse("prize_delete", args=[self.camp_x.id, self.prize_x.id])
         )
         self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, reverse("campaign_detail", args=[self.camp_x.id]))
         self.assertFalse(Prize.objects.filter(id=self.prize_x.id).exists())
 
     def test_prize_delete_non_manager_gets_403(self):
