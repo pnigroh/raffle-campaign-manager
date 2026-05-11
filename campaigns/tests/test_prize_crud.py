@@ -193,3 +193,43 @@ class PrizeDeleteTests(TestCase):
             reverse("prize_delete", args=[self.camp_x.id, self.prize_x.id])
         )
         self.assertEqual(resp.status_code, 405)
+
+    def test_prize_delete_with_winners_is_rejected(self):
+        from campaigns.models import Raffle, RaffleWinner, Submission
+        # Set up: prize_x has a raffle winner attached
+        sub = Submission.objects.create(
+            campaign=self.camp_x,
+            first_name="Test",
+            last_name="Winner",
+            phone="555-0001",
+            email="winner@example.com",
+        )
+        raffle = Raffle.objects.create(campaign=self.camp_x, conducted_by=self.alice)
+        RaffleWinner.objects.create(
+            raffle=raffle, submission=sub, prize=self.prize_x, position=1
+        )
+        self.client.force_login(self.alice)
+        resp = self.client.post(
+            reverse("prize_delete", args=[self.camp_x.id, self.prize_x.id]),
+            follow=True,
+        )
+        self.assertEqual(resp.status_code, 200)
+        # Prize must still exist
+        self.assertTrue(Prize.objects.filter(id=self.prize_x.id).exists())
+        # Error flash must be surfaced
+        flash = [m.message for m in resp.context["messages"]]
+        self.assertTrue(
+            any("ganadores" in m.lower() for m in flash),
+            f"Expected a 'ganadores' (winners) error flash, got: {flash}",
+        )
+
+    def test_prize_delete_cross_campaign_prize_returns_404(self):
+        # Alice manages camp_x but POSTs to /campaign/camp_x/prize/<prize_y.id>/delete/
+        # Cross-campaign tampering should 404 (prize.campaign != camp_x).
+        self.client.force_login(self.alice)
+        resp = self.client.post(
+            reverse("prize_delete", args=[self.camp_x.id, self.prize_y.id])
+        )
+        self.assertEqual(resp.status_code, 404)
+        # prize_y must still exist
+        self.assertTrue(Prize.objects.filter(id=self.prize_y.id).exists())

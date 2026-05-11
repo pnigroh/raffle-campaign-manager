@@ -394,6 +394,12 @@ def prize_edit(request, campaign_id, prize_id):
 def prize_delete(request, campaign_id, prize_id):
     campaign = _get_managed_campaign_or_403(request.user, campaign_id)
     prize = get_object_or_404(Prize, id=prize_id, campaign=campaign)
+    if prize.winners.exists():
+        messages.error(
+            request,
+            f'No se puede borrar "{prize.name}": tiene ganadores asociados a un sorteo.',
+        )
+        return redirect('campaign_detail', campaign_id=campaign.id)
     prize_name = prize.name
     prize.delete()
     messages.success(request, f'Premio "{prize_name}" borrado.')
