@@ -1,10 +1,10 @@
 {% load i18n %}
 
 {# === Add / Edit prize modal === #}
-<div class="modal fade" id="prizeModal" tabindex="-1" aria-labelledby="prizeModalTitle" aria-hidden="true">
+<div class="modal fade" id="prizeModal" tabindex="-1" role="dialog" aria-labelledby="prizeModalTitle" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form id="prizeForm" method="post" action="">
+      <form id="prizeForm" method="post" action="#">
         {% csrf_token %}
         <div class="modal-header">
           <h5 class="modal-title pd-display" id="prizeModalTitle">{% trans "Premio" %}</h5>
@@ -40,10 +40,10 @@
 </div>
 
 {# === Delete confirmation modal === #}
-<div class="modal fade" id="prizeDeleteModal" tabindex="-1" aria-labelledby="prizeDeleteModalTitle" aria-hidden="true">
+<div class="modal fade" id="prizeDeleteModal" tabindex="-1" role="dialog" aria-labelledby="prizeDeleteModalTitle" aria-hidden="true">
   <div class="modal-dialog modal-sm">
     <div class="modal-content">
-      <form id="prizeDeleteForm" method="post" action="">
+      <form id="prizeDeleteForm" method="post" action="#">
         {% csrf_token %}
         <div class="modal-header">
           <h5 class="modal-title pd-display" id="prizeDeleteModalTitle">{% trans "Borrar premio" %}</h5>
