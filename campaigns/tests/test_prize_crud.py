@@ -98,3 +98,56 @@ class PrizeAddTests(TestCase):
         self.client.force_login(self.alice)
         resp = self.client.get(reverse("prize_add", args=[self.camp_x.id]))
         self.assertEqual(resp.status_code, 405)
+
+
+class PrizeEditTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.alice = User.objects.create_user("alice", password="pw", is_staff=True)
+        cls.bob = User.objects.create_user("bob", password="pw", is_staff=True)
+        cls.camp_x = _campaign("Campaign X", "camp-x", manager=cls.alice)
+        cls.camp_y = _campaign("Campaign Y", "camp-y", manager=cls.bob)
+        cls.prize_x = Prize.objects.create(
+            campaign=cls.camp_x, name="Original", quantity=1, order=10
+        )
+        cls.prize_y = Prize.objects.create(
+            campaign=cls.camp_y, name="Bob's prize", quantity=1, order=10
+        )
+
+    def test_prize_edit_persists_changes(self):
+        self.client.force_login(self.alice)
+        resp = self.client.post(
+            reverse("prize_edit", args=[self.camp_x.id, self.prize_x.id]),
+            data={"name": "Updated", "description": "new", "quantity": 5, "order": 20},
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.prize_x.refresh_from_db()
+        self.assertEqual(self.prize_x.name, "Updated")
+        self.assertEqual(self.prize_x.quantity, 5)
+        self.assertEqual(self.prize_x.order, 20)
+
+    def test_prize_edit_non_manager_gets_403(self):
+        self.client.force_login(self.alice)
+        resp = self.client.post(
+            reverse("prize_edit", args=[self.camp_y.id, self.prize_y.id]),
+            data={"name": "Hijacked", "description": "", "quantity": 1, "order": 0},
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.prize_y.refresh_from_db()
+        self.assertEqual(self.prize_y.name, "Bob's prize")
+
+    def test_cross_campaign_prize_edit_returns_404(self):
+        # Alice tries to edit her OWN campaign's URL but with bob's prize_id
+        self.client.force_login(self.alice)
+        resp = self.client.post(
+            reverse("prize_edit", args=[self.camp_x.id, self.prize_y.id]),
+            data={"name": "Hijack", "description": "", "quantity": 1, "order": 0},
+        )
+        self.assertEqual(resp.status_code, 404)
+
+    def test_prize_edit_get_returns_405(self):
+        self.client.force_login(self.alice)
+        resp = self.client.get(
+            reverse("prize_edit", args=[self.camp_x.id, self.prize_x.id])
+        )
+        self.assertEqual(resp.status_code, 405)
