@@ -1,6 +1,6 @@
-# 🎰 Raffle Campaign Manager
+# Promo-Domo
 
-A Django-based campaign and raffle management system that allows you to create campaigns, collect participant submissions via a public form, and conduct segmented raffles with exportable results.
+A Django-based promotion and raffle management platform. Create campaigns, collect participant submissions via a delightful public form, and conduct segmented raffles with exportable results — all under a friendly dodo mascot.
 
 ---
 
@@ -297,7 +297,7 @@ Paste:
 
 ```ini
 [Unit]
-Description=Raffle Campaign Manager - Gunicorn
+Description=Promo-Domo - Gunicorn
 After=network.target
 
 [Service]
