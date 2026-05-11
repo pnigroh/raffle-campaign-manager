@@ -279,6 +279,18 @@
     .stat-card.orange { background: var(--pd-cream); color: var(--pd-ink); }
     .stat-card.teal   { background: var(--pd-teal); color: #fff; }
 
+    /* Icon contrast on light-bg variants — templates use inline
+       rgba(255,255,255,0.2) backplate + Bootstrap .text-white on the glyph,
+       which disappears on yellow/cream. Override with !important. */
+    .stat-card.blue .stat-icon,
+    .stat-card.orange .stat-icon {
+      background: rgba(31, 41, 55, 0.14) !important;
+    }
+    .stat-card.blue .stat-icon i,
+    .stat-card.orange .stat-icon i {
+      color: var(--pd-ink) !important;
+    }
+
     /* Tables */
     .table-card {
       border-radius: var(--card-radius);

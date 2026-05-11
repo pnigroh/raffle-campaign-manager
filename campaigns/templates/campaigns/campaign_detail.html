@@ -51,6 +51,7 @@
       </div>
     </div>
   </div>
+  {% if campaign.validate_submission_code %}
   <div class="col-6 col-xl-3">
     <div class="stat-card green">
       <div class="stat-icon" style="background:rgba(255,255,255,0.2);">
@@ -69,6 +70,7 @@
       <div class="stat-label">{% trans "Códigos Usados" %}</div>
     </div>
   </div>
+  {% endif %}
   <div class="col-6 col-xl-3">
     <div class="stat-card purple">
       <div class="stat-icon" style="background:rgba(255,255,255,0.2);">
