@@ -231,6 +231,22 @@ def raffle_view(request, campaign_id):
             filtered_submissions = filtered_submissions.filter(submitted_at__date__gte=date_from)
         if date_to:
             filtered_submissions = filtered_submissions.filter(submitted_at__date__lte=date_to)
+        search = segment_form.cleaned_data.get('search', '').strip()
+        if search:
+            filtered_submissions = filtered_submissions.filter(
+                Q(first_name__icontains=search)
+                | Q(last_name__icontains=search)
+                | Q(email__icontains=search)
+                | Q(phone__icontains=search)
+            )
+        store = segment_form.cleaned_data.get('store')
+        if store:
+            filtered_submissions = filtered_submissions.filter(store=store)
+        include_already_participated = segment_form.cleaned_data.get(
+            'include_already_participated', False
+        )
+        if not include_already_participated:
+            filtered_submissions = filtered_submissions.filter(participated_at__isnull=True)
 
         prizes_with_quantities = []
         for prize in prizes:
@@ -255,12 +271,18 @@ def raffle_view(request, campaign_id):
                     f'participants in pool. Some prizes may have fewer winners.'
                 )
 
+            consume_pool = segment_form.cleaned_data.get('consume_pool', True)
+            segment_data = dict(segment_form.cleaned_data)
+            # Persist the store id (FK object isn't JSON-serializable downstream)
+            segment_data['store_id'] = store.id if store else None
             raffle = conduct_raffle(
                 campaign=campaign,
                 prizes_with_quantities=prizes_with_quantities,
                 submission_qs=filtered_submissions,
                 conducted_by=request.user,
-                segment_data=segment_form.cleaned_data,
+                segment_data=segment_data,
+                consume_pool=consume_pool,
+                excluded_already_participated=not include_already_participated,
             )
             messages.success(request, f'Raffle conducted successfully! {raffle.winners.count()} winners selected.')
             return redirect('raffle_results', raffle_id=raffle.id)
@@ -339,15 +361,22 @@ def import_codes_view(request, campaign_id):
 
 @login_required
 def ajax_filter_count(request, campaign_id):
-    """AJAX endpoint to get submission count for given filters."""
+    """AJAX endpoint to get submission count for given filters.
+
+    Mirrors the filtering applied by raffle_view so the live count preview
+    accurately predicts the pool size for the next draw.
+    """
     campaign = _get_managed_campaign_or_403(request.user, campaign_id)
 
     state = request.GET.get('state', '')
     county = request.GET.get('county', '')
     date_from = request.GET.get('date_from', '')
     date_to = request.GET.get('date_to', '')
+    search = request.GET.get('search', '').strip()
+    store_id = request.GET.get('store', '')
+    include_already_participated = request.GET.get('include_already_participated') == 'on'
 
-    qs = campaign.submissions.all()
+    qs = campaign.submissions.filter(is_valid=True)
     if state:
         qs = qs.filter(state=state)
     if county:
@@ -356,6 +385,17 @@ def ajax_filter_count(request, campaign_id):
         qs = qs.filter(submitted_at__date__gte=date_from)
     if date_to:
         qs = qs.filter(submitted_at__date__lte=date_to)
+    if search:
+        qs = qs.filter(
+            Q(first_name__icontains=search)
+            | Q(last_name__icontains=search)
+            | Q(email__icontains=search)
+            | Q(phone__icontains=search)
+        )
+    if store_id:
+        qs = qs.filter(store_id=store_id)
+    if not include_already_participated:
+        qs = qs.filter(participated_at__isnull=True)
 
     return JsonResponse({'count': qs.count()})
 

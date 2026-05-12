@@ -197,3 +197,80 @@ class ConsumePoolTests(TestCase):
         )
         self.assertTrue(r1.consumed_pool)
         self.assertFalse(r2.consumed_pool)
+
+
+class PoolFilterTests(TestCase):
+    """The expanded RaffleSegmentForm filters the pool by search, store, and
+    the include_already_participated toggle."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.alice = User.objects.create_user("alice", password="pw", is_staff=True)
+        cls.campaign = _campaign(manager=cls.alice)
+        cls.store_a = Store.objects.create(name="Store A", is_active=True)
+        cls.store_b = Store.objects.create(name="Store B", is_active=True)
+        cls.prize = Prize.objects.create(campaign=cls.campaign, name="P", quantity=10)
+
+        cls.alice_sub = _submission(
+            cls.campaign, first_name="Alice", last_name="A", email="alice@x.com",
+            phone="111", store=cls.store_a,
+        )
+        cls.bob_sub = _submission(
+            cls.campaign, first_name="Bob", last_name="B", email="bob@x.com",
+            phone="222", store=cls.store_a,
+        )
+        cls.cara_sub = _submission(
+            cls.campaign, first_name="Cara", last_name="C", email="cara@x.com",
+            phone="333", store=cls.store_b,
+        )
+
+    def _post_draw(self, **form_data):
+        # Ensure all four prize-quantity inputs default sanely
+        form_data.setdefault("prize_qty_" + str(self.prize.id), "10")
+        self.client.force_login(self.alice)
+        from django.urls import reverse
+        return self.client.post(
+            reverse("raffle", args=[self.campaign.id]),
+            data=form_data,
+            follow=False,
+        )
+
+    def test_search_filter_narrows_pool_by_first_name(self):
+        self._post_draw(search="Alice")
+        raffle = Raffle.objects.filter(campaign=self.campaign).latest("conducted_at")
+        self.assertEqual(raffle.participant_pool_snapshot, [self.alice_sub.id])
+        self.assertEqual(raffle.filter_search, "Alice")
+
+    def test_store_filter_narrows_pool(self):
+        self._post_draw(store=str(self.store_a.id))
+        raffle = Raffle.objects.filter(campaign=self.campaign).latest("conducted_at")
+        self.assertEqual(
+            sorted(raffle.participant_pool_snapshot),
+            sorted([self.alice_sub.id, self.bob_sub.id]),
+        )
+        self.assertEqual(raffle.filter_store_id, self.store_a.id)
+
+    def test_already_participated_excluded_by_default(self):
+        # Mark bob as already-participated
+        Submission.objects.filter(id=self.bob_sub.id).update(
+            participated_at=timezone.now()
+        )
+        self._post_draw()
+        raffle = Raffle.objects.filter(campaign=self.campaign).latest("conducted_at")
+        self.assertNotIn(self.bob_sub.id, raffle.participant_pool_snapshot)
+        self.assertTrue(raffle.excluded_already_participated)
+
+    def test_include_already_participated_overrides_default(self):
+        Submission.objects.filter(id=self.bob_sub.id).update(
+            participated_at=timezone.now()
+        )
+        self._post_draw(include_already_participated="on")
+        raffle = Raffle.objects.filter(campaign=self.campaign).latest("conducted_at")
+        self.assertIn(self.bob_sub.id, raffle.participant_pool_snapshot)
+        self.assertFalse(raffle.excluded_already_participated)
+
+    def test_invalid_submissions_always_excluded(self):
+        Submission.objects.filter(id=self.cara_sub.id).update(is_valid=False)
+        self._post_draw()
+        raffle = Raffle.objects.filter(campaign=self.campaign).latest("conducted_at")
+        self.assertNotIn(self.cara_sub.id, raffle.participant_pool_snapshot)

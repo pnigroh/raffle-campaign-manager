@@ -106,6 +106,27 @@ class RaffleSegmentForm(forms.Form):
         required=False, label='Submitted To',
         widget=forms.DateInput(attrs={'type': 'date'})
     )
+    search = forms.CharField(
+        max_length=200, required=False,
+        label='Search',
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Nombre, correo o teléfono...',
+        }),
+    )
+    store = forms.ModelChoiceField(
+        queryset=Store.objects.filter(is_active=True), required=False,
+        empty_label="-- Cualquier tienda --",
+        label='Filter by Store',
+    )
+    include_already_participated = forms.BooleanField(
+        required=False,
+        label='Incluir participantes que ya han participado',
+        help_text='Por defecto, los participantes de sorteos anteriores se excluyen.',
+    )
+    consume_pool = forms.BooleanField(
+        required=False, initial=True,
+        label='Marcar participantes como "ya participaron" después del sorteo',
+    )
     notes = forms.CharField(
         required=False, label='Raffle Notes',
         widget=forms.Textarea(attrs={'rows': 2, 'placeholder': 'Optional notes about this raffle draw...'})
