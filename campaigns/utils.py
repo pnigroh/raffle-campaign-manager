@@ -56,7 +56,7 @@ def import_codes_from_csv(campaign, file, skip_duplicates=True):
 def conduct_raffle(campaign, prizes_with_quantities, submission_qs,
                    conducted_by=None, segment_data=None,
                    seed=None, consume_pool=True,
-                   excluded_already_participated=True):
+                   excluded_already_participated=False):
     """
     Conduct a raffle.
 

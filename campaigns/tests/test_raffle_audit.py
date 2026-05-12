@@ -111,8 +111,8 @@ class ConductRaffleReproducibilityTests(TestCase):
         r2 = self._draw(seed="bbbbbbbb" * 4)
         ids1 = set(r1.winners.values_list("submission_id", flat=True))
         ids2 = set(r2.winners.values_list("submission_id", flat=True))
-        # With 12 submissions and 3 winners, probability of identical sets
-        # by chance is C(3,3)/C(12,3) = 1/220 ≈ 0.45%.
+        # Seeds are fixed constants so this comparison is deterministic,
+        # not probabilistic.
         self.assertNotEqual(ids1, ids2)
 
     def test_seed_is_persisted_on_raffle(self):
