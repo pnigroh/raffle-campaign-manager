@@ -23,6 +23,8 @@ urlpatterns = [
     path('dashboard/campaign/<int:campaign_id>/import-codes/', views.import_codes_view, name='import_codes'),
     path('dashboard/campaign/<int:campaign_id>/filter-count/', views.ajax_filter_count, name='ajax_filter_count'),
     path('dashboard/campaign/<int:campaign_id>/submission/<int:submission_id>/validity/', views.submission_set_validity, name='submission_set_validity'),
+    path('dashboard/campaign/<int:campaign_id>/submission/<int:submission_id>/restore-eligibility/',
+         views.submission_restore_eligibility, name='submission_restore_eligibility'),
     path('dashboard/campaign/<int:campaign_id>/prize/add/', views.prize_add, name='prize_add'),
     path('dashboard/campaign/<int:campaign_id>/prize/<int:prize_id>/edit/', views.prize_edit, name='prize_edit'),
     path('dashboard/campaign/<int:campaign_id>/prize/<int:prize_id>/delete/', views.prize_delete, name='prize_delete'),

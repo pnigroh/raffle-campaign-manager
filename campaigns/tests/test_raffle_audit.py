@@ -274,3 +274,83 @@ class PoolFilterTests(TestCase):
         self._post_draw()
         raffle = Raffle.objects.filter(campaign=self.campaign).latest("conducted_at")
         self.assertNotIn(self.cara_sub.id, raffle.participant_pool_snapshot)
+
+
+class RestoreEligibilityTests(TestCase):
+    """Operators (campaign managers) can flip a submission back to eligible
+    by POSTing a reason. The reversal is recorded on the submission row."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.alice = User.objects.create_user("alice", password="pw", is_staff=True)
+        cls.bob = User.objects.create_user("bob", password="pw", is_staff=True)
+        cls.camp_x = _campaign(name="X", slug="x", manager=cls.alice)
+        cls.camp_y = _campaign(name="Y", slug="y", manager=cls.bob)
+        cls.sub_x = _submission(cls.camp_x, first_name="X", email="x@x.com")
+        cls.sub_y = _submission(cls.camp_y, first_name="Y", email="y@y.com")
+        # Pre-mark both as already participated
+        Submission.objects.filter(id__in=[cls.sub_x.id, cls.sub_y.id]).update(
+            participated_at=timezone.now()
+        )
+
+    def test_restore_eligibility_clears_participated_at_and_records_audit(self):
+        from django.urls import reverse
+        self.client.force_login(self.alice)
+        resp = self.client.post(
+            reverse("submission_restore_eligibility",
+                    args=[self.camp_x.id, self.sub_x.id]),
+            data={"reason": "Drew the wrong campaign by mistake"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.sub_x.refresh_from_db()
+        self.assertIsNone(self.sub_x.participated_at)
+        self.assertIsNotNone(self.sub_x.eligibility_restored_at)
+        self.assertEqual(self.sub_x.eligibility_restored_by, self.alice)
+        self.assertEqual(
+            self.sub_x.eligibility_restoration_reason,
+            "Drew the wrong campaign by mistake",
+        )
+
+    def test_restore_eligibility_requires_reason(self):
+        from django.urls import reverse
+        self.client.force_login(self.alice)
+        resp = self.client.post(
+            reverse("submission_restore_eligibility",
+                    args=[self.camp_x.id, self.sub_x.id]),
+            data={"reason": ""},
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.sub_x.refresh_from_db()
+        self.assertIsNotNone(self.sub_x.participated_at)  # unchanged
+
+    def test_restore_eligibility_on_already_eligible_returns_400(self):
+        from django.urls import reverse
+        Submission.objects.filter(id=self.sub_x.id).update(participated_at=None)
+        self.client.force_login(self.alice)
+        resp = self.client.post(
+            reverse("submission_restore_eligibility",
+                    args=[self.camp_x.id, self.sub_x.id]),
+            data={"reason": "should be a no-op"},
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_restore_eligibility_non_manager_gets_403(self):
+        from django.urls import reverse
+        self.client.force_login(self.alice)
+        resp = self.client.post(
+            reverse("submission_restore_eligibility",
+                    args=[self.camp_y.id, self.sub_y.id]),
+            data={"reason": "tampering"},
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.sub_y.refresh_from_db()
+        self.assertIsNotNone(self.sub_y.participated_at)  # unchanged
+
+    def test_restore_eligibility_get_returns_405(self):
+        from django.urls import reverse
+        self.client.force_login(self.alice)
+        resp = self.client.get(
+            reverse("submission_restore_eligibility",
+                    args=[self.camp_x.id, self.sub_x.id]),
+        )
+        self.assertEqual(resp.status_code, 405)

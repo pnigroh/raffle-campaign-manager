@@ -447,3 +447,40 @@ def prize_delete(request, campaign_id, prize_id):
     prize.delete()
     messages.success(request, f'Premio "{prize_name}" borrado.')
     return redirect('campaign_detail', campaign_id=campaign.id)
+
+
+@login_required
+@require_POST
+def submission_restore_eligibility(request, campaign_id, submission_id):
+    """Operator restores a submission's eligibility (clears participated_at
+    and records who/when/why)."""
+    campaign = _get_managed_campaign_or_403(request.user, campaign_id)
+    submission = get_object_or_404(Submission, id=submission_id, campaign=campaign)
+
+    reason = request.POST.get('reason', '').strip()[:200]
+    if not reason:
+        return JsonResponse(
+            {'error': 'A reason is required to restore eligibility.'},
+            status=400,
+        )
+    if submission.participated_at is None:
+        return JsonResponse(
+            {'error': 'Submission is already eligible.'},
+            status=400,
+        )
+
+    submission.participated_at = None
+    submission.eligibility_restored_at = timezone.now()
+    submission.eligibility_restored_by = request.user
+    submission.eligibility_restoration_reason = reason
+    submission.save(update_fields=[
+        'participated_at',
+        'eligibility_restored_at',
+        'eligibility_restored_by',
+        'eligibility_restoration_reason',
+    ])
+    messages.success(
+        request,
+        f'Elegibilidad restaurada para {submission.full_name}.',
+    )
+    return redirect('campaign_detail', campaign_id=campaign.id)
