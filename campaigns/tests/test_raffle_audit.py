@@ -357,3 +357,78 @@ class RestoreEligibilityTests(TestCase):
                     args=[self.camp_x.id, self.sub_x.id]),
         )
         self.assertEqual(resp.status_code, 405)
+
+
+class VerifyRaffleAuditTests(TestCase):
+    """verify_raffle_audit re-runs the recorded inputs and checks the
+    winners reproduce. It does NOT mutate state."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.alice = User.objects.create_user("alice", password="pw", is_staff=True)
+        cls.campaign = _campaign(manager=cls.alice)
+        cls.subs = [
+            _submission(cls.campaign, first_name=f"S{i}", email=f"s{i}@example.com")
+            for i in range(8)
+        ]
+        cls.prize = Prize.objects.create(campaign=cls.campaign, name="P", quantity=3)
+
+    def test_verify_succeeds_for_unmodified_raffle(self):
+        from campaigns.utils import conduct_raffle, verify_raffle_audit
+        raffle = conduct_raffle(
+            campaign=self.campaign,
+            prizes_with_quantities=[(self.prize, 3)],
+            submission_qs=self.campaign.submissions.all(),
+            conducted_by=self.alice,
+            consume_pool=False,
+        )
+        result = verify_raffle_audit(raffle)
+        self.assertEqual(result['status'], 'ok')
+        self.assertIsNone(result.get('diff'))
+
+    def test_verify_fails_when_winners_have_been_tampered_with(self):
+        from campaigns.utils import conduct_raffle, verify_raffle_audit
+        raffle = conduct_raffle(
+            campaign=self.campaign,
+            prizes_with_quantities=[(self.prize, 3)],
+            submission_qs=self.campaign.submissions.all(),
+            conducted_by=self.alice,
+            consume_pool=False,
+        )
+        # Swap the winning submission of position 1 with a non-winner
+        winner_1 = raffle.winners.get(position=1)
+        all_winner_ids = set(raffle.winners.values_list('submission_id', flat=True))
+        non_winner = next(s for s in self.subs if s.id not in all_winner_ids)
+        winner_1.submission = non_winner
+        winner_1.save()
+        result = verify_raffle_audit(raffle)
+        self.assertEqual(result['status'], 'mismatch')
+        self.assertIsNotNone(result['diff'])
+
+    def test_verify_unverifiable_for_pre_audit_raffle(self):
+        from campaigns.utils import verify_raffle_audit
+        raffle = Raffle.objects.create(
+            campaign=self.campaign, conducted_by=self.alice,
+            seed='',  # explicitly empty (pre-feature raffle)
+            participant_pool_snapshot=[],
+        )
+        result = verify_raffle_audit(raffle)
+        self.assertEqual(result['status'], 'unverifiable')
+
+    def test_verify_unverifiable_when_pool_submissions_have_been_deleted(self):
+        from campaigns.utils import conduct_raffle, verify_raffle_audit
+        raffle = conduct_raffle(
+            campaign=self.campaign,
+            prizes_with_quantities=[(self.prize, 3)],
+            submission_qs=self.campaign.submissions.all(),
+            conducted_by=self.alice,
+            consume_pool=False,
+        )
+        # Delete one submission from the original pool (admin override scenario).
+        # Pick a non-winner so the winners table integrity isn't affected.
+        winner_ids = set(raffle.winners.values_list('submission_id', flat=True))
+        victim = next(s for s in self.subs if s.id not in winner_ids)
+        victim.delete()
+        result = verify_raffle_audit(raffle)
+        self.assertEqual(result['status'], 'unverifiable')
+        self.assertIn('missing', result.get('diff', {}).get('reason', '').lower())

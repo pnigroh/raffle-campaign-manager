@@ -184,3 +184,64 @@ def export_submissions_csv(campaign, submission_qs=None):
         ])
 
     return response
+
+
+def verify_raffle_audit(raffle):
+    """Re-run the recorded raffle inputs and assert the winners reproduce.
+
+    Returns a dict:
+      {'status': 'ok'} if winners reproduce exactly.
+      {'status': 'mismatch', 'diff': {...}} if winners differ.
+      {'status': 'unverifiable', 'diff': {'reason': '...'}} if the raffle predates
+        audit logging or some pool members no longer exist in the database.
+
+    Does NOT mutate any data.
+    """
+    from .models import Submission
+
+    if not raffle.seed or not raffle.participant_pool_snapshot:
+        return {'status': 'unverifiable',
+                'diff': {'reason': 'Raffle was conducted before audit logging was added.'}}
+
+    snapshot_ids = list(raffle.participant_pool_snapshot)
+    pool = list(Submission.objects.filter(id__in=snapshot_ids).order_by('id'))
+    if len(pool) != len(snapshot_ids):
+        existing_ids = {s.id for s in pool}
+        missing = [sid for sid in snapshot_ids if sid not in existing_ids]
+        return {'status': 'unverifiable',
+                'diff': {'reason': f'{len(missing)} pool submissions are missing from the database.',
+                         'missing_ids': missing}}
+
+    rng = random.Random(raffle.seed)
+    rng.shuffle(pool)
+
+    expected_winners = []
+    used = set()
+    for entry in raffle.prize_quantities:
+        prize_id = entry['prize_id']
+        quantity = entry['quantity']
+        count = 0
+        for submission in pool:
+            if submission.id in used:
+                continue
+            if count >= quantity:
+                break
+            expected_winners.append({
+                'prize_id': prize_id,
+                'submission_id': submission.id,
+                'position': count + 1,
+            })
+            used.add(submission.id)
+            count += 1
+
+    actual_winners = [
+        {'prize_id': w.prize_id, 'submission_id': w.submission_id, 'position': w.position}
+        for w in raffle.winners.order_by('prize__order', 'position')
+    ]
+    expected_sorted = sorted(expected_winners, key=lambda w: (w['prize_id'], w['position']))
+    actual_sorted = sorted(actual_winners, key=lambda w: (w['prize_id'], w['position']))
+
+    if expected_sorted == actual_sorted:
+        return {'status': 'ok'}
+    return {'status': 'mismatch',
+            'diff': {'expected': expected_sorted, 'actual': actual_sorted}}
