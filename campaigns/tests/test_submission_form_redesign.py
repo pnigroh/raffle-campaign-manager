@@ -88,3 +88,18 @@ class SubmissionFormRedesignTitularsTests(TestCase):
         body = self.client.get(url).content.decode()
         self.assertIn("campaigns/landing/bg_mobile_steps.png", body)
         self.assertNotIn("campaigns/img/bg_2.webp", body)
+
+
+class SubmissionFormRedesignDesktopTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.campaign = _open_campaign(slug="futboleros-desktop")
+
+    def test_desktop_bg_referenced_in_response(self):
+        # The inline <style> block contains the desktop media query that
+        # references bg_desktop.png as the body background.
+        url = reverse("submission_form", kwargs={"campaign_slug": self.campaign.slug})
+        body = self.client.get(url).content.decode()
+        self.assertIn("campaigns/landing/bg_desktop.png", body)
+        # And the desktop breakpoint is at 768px
+        self.assertIn("min-width: 768px", body)

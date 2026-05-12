@@ -74,17 +74,58 @@
       background-image: url("{% static 'campaigns/landing/bg_mobile_steps.png' %}");
     }
 
-    @media (min-width: 720px) {
+    @media (min-width: 768px) {
       body {
-        display: grid;
-        place-items: center;
-        padding: 24px 0;
+        background: #0e6dc2 url("{% static 'campaigns/landing/bg_desktop.png' %}") center center / cover no-repeat fixed;
+        overflow-x: hidden;
+        padding: 0;
+        display: block;
       }
-      .stage {
-        min-height: min(900px, calc(100dvh - 48px));
-        border-radius: 32px;
-        overflow: hidden;
-        box-shadow: 0 30px 80px rgba(0,0,0,.35);
+
+      .stage,
+      .stage[data-step="welcome"],
+      .stage[data-step="form"],
+      .stage[data-step="trivia"],
+      .stage[data-step="success"],
+      .stage[data-step="fail"] {
+        background: transparent;
+        background-image: none;
+        box-shadow: none;
+        border-radius: 0;
+        max-width: none;
+        min-height: 100dvh;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+      }
+
+      .step {
+        width: 100%;
+        max-width: 480px;
+        margin-right: clamp(24px, 6vw, 96px);
+        padding: 24px;
+        flex: 0 1 auto;
+      }
+
+      .welcome {
+        align-items: center;
+        justify-content: center;
+      }
+
+      .welcome .welcome-spacer { display: none; }
+
+      .titular {
+        margin-top: 0;
+      }
+
+      .titular-stack {
+        margin-top: 0;
+      }
+
+      .card {
+        margin-top: 18px;
       }
     }
 
