@@ -157,6 +157,15 @@
       text-shadow: 0 2px 6px rgba(0,0,0,.18);
     }
 
+    .welcome-logo {
+      display: block;
+      width: 100%;
+      max-width: min(72%, 320px);
+      height: auto;
+      margin: 4% auto 0;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,.22));
+    }
+
     .welcome-pill {
       background: var(--red);
       color: #fff;
@@ -531,6 +540,8 @@
   <!-- Step 1: Welcome -->
   <section class="step is-active welcome" data-step="welcome">
     <h1 class="welcome-headline">¡BIENVENIDO!</h1>
+    <img class="welcome-logo" src="{% static 'campaigns/landing/logo_nube.png' %}"
+         alt="La Nube que te mueve... y te lleva al gol">
     <div class="welcome-spacer"></div>
     <div class="welcome-cta">
       <button type="button" class="btn btn-white btn-wide" data-go="form">EMPEZAR</button>
