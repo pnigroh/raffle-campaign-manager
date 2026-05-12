@@ -521,3 +521,56 @@ def raffle_audit(request, raffle_id):
         'winners': winners,
         'restored_count': restored_count,
     })
+
+
+@login_required
+def raffle_audit_json(request, raffle_id):
+    """Return the full audit blob as a downloadable JSON file."""
+    from .utils import verify_raffle_audit
+    raffle = get_object_or_404(Raffle, id=raffle_id)
+    if not request.user.is_superuser and not raffle.campaign.managers.filter(
+        id=request.user.id
+    ).exists():
+        raise PermissionDenied("You don't have access to this raffle.")
+
+    verify_result = verify_raffle_audit(raffle)
+    winners = [
+        {
+            'prize_id': w.prize_id,
+            'prize_name': w.prize.name,
+            'submission_id': w.submission_id,
+            'submission_name': w.submission.full_name,
+            'position': w.position,
+        }
+        for w in raffle.winners.select_related('submission', 'prize').order_by(
+            'prize__order', 'position'
+        )
+    ]
+    payload = {
+        'raffle_id': raffle.id,
+        'campaign_id': raffle.campaign_id,
+        'campaign_name': raffle.campaign.name,
+        'conducted_by': raffle.conducted_by.username if raffle.conducted_by else None,
+        'conducted_at': raffle.conducted_at.isoformat(),
+        'notes': raffle.notes,
+        'algorithm': raffle.algorithm,
+        'algorithm_version': raffle.algorithm_version,
+        'seed': raffle.seed,
+        'participant_pool_snapshot': list(raffle.participant_pool_snapshot),
+        'prize_quantities': list(raffle.prize_quantities),
+        'segment_state': raffle.segment_state,
+        'segment_county': raffle.segment_county,
+        'segment_date_from': raffle.segment_date_from.isoformat() if raffle.segment_date_from else None,
+        'segment_date_to': raffle.segment_date_to.isoformat() if raffle.segment_date_to else None,
+        'filter_search': raffle.filter_search,
+        'filter_store_id': raffle.filter_store_id,
+        'consumed_pool': raffle.consumed_pool,
+        'excluded_already_participated': raffle.excluded_already_participated,
+        'winners': winners,
+        'verify_result': verify_result,
+    }
+    response = JsonResponse(payload, json_dumps_params={'indent': 2})
+    response['Content-Disposition'] = (
+        f'attachment; filename="raffle-{raffle.id}-audit.json"'
+    )
+    return response
