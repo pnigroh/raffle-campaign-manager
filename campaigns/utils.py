@@ -1,6 +1,7 @@
 import csv
 import io
 import random
+import secrets
 from django.http import HttpResponse
 from django.utils import timezone
 from .models import SubmissionCode, Submission, RaffleWinner
@@ -52,16 +53,35 @@ def import_codes_from_csv(campaign, file, skip_duplicates=True):
     return created, skipped, errors
 
 
-def conduct_raffle(campaign, prizes_with_quantities, submission_qs, conducted_by=None, segment_data=None):
+def conduct_raffle(campaign, prizes_with_quantities, submission_qs,
+                   conducted_by=None, segment_data=None,
+                   seed=None, consume_pool=True,
+                   excluded_already_participated=True):
     """
     Conduct a raffle.
+
     prizes_with_quantities: list of (Prize, quantity) tuples
     submission_qs: QuerySet of eligible Submission objects
-    Returns: Raffle object with winners
+    seed: hex string for the RNG. If None, generates 32-char hex via secrets.token_hex(16).
+    consume_pool: if True, marks every pool member as already-participated after the draw.
+    excluded_already_participated: stored on the Raffle to record what filter was applied
+        upstream (the filter itself is applied by the view, not here).
+
+    Returns: Raffle object with winners attached.
     """
-    from .models import Raffle, RaffleWinner
+    from .models import Raffle, RaffleWinner, Submission
 
     segment_data = segment_data or {}
+
+    if seed is None:
+        seed = secrets.token_hex(16)
+    rng = random.Random(seed)
+
+    # Canonical order: order_by('id') so the snapshot is deterministic
+    # regardless of the QuerySet's default ordering.
+    pool = list(submission_qs.order_by('id'))
+    snapshot = [s.id for s in pool]
+    rng.shuffle(pool)
 
     raffle = Raffle.objects.create(
         campaign=campaign,
@@ -71,15 +91,22 @@ def conduct_raffle(campaign, prizes_with_quantities, submission_qs, conducted_by
         segment_county=segment_data.get('county', ''),
         segment_date_from=segment_data.get('date_from'),
         segment_date_to=segment_data.get('date_to'),
-        total_participants=submission_qs.count(),
+        total_participants=len(pool),
+        seed=seed,
+        algorithm='python.random.shuffle',
+        algorithm_version='1.0',
+        participant_pool_snapshot=snapshot,
+        prize_quantities=[
+            {'prize_id': p.id, 'prize_name': p.name, 'quantity': q}
+            for p, q in prizes_with_quantities
+        ],
+        consumed_pool=consume_pool,
+        excluded_already_participated=excluded_already_participated,
+        filter_search=segment_data.get('search', ''),
+        filter_store_id=segment_data.get('store_id'),
     )
 
-    pool = list(submission_qs)
-    random.shuffle(pool)
-
-    winners_created = []
     used_submissions = set()
-
     for prize, quantity in prizes_with_quantities:
         count = 0
         for submission in pool:
@@ -91,11 +118,15 @@ def conduct_raffle(campaign, prizes_with_quantities, submission_qs, conducted_by
                 raffle=raffle,
                 submission=submission,
                 prize=prize,
-                position=count + 1
+                position=count + 1,
             )
             used_submissions.add(submission.id)
-            winners_created.append(submission)
             count += 1
+
+    if consume_pool and snapshot:
+        Submission.objects.filter(id__in=snapshot).update(
+            participated_at=raffle.conducted_at,
+        )
 
     return raffle
 
