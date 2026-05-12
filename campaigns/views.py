@@ -490,7 +490,10 @@ def submission_restore_eligibility(request, campaign_id, submission_id):
 def raffle_audit(request, raffle_id):
     """Render the audit page for a raffle, including verification status."""
     from .utils import verify_raffle_audit
-    raffle = get_object_or_404(Raffle, id=raffle_id)
+    raffle = get_object_or_404(
+        Raffle.objects.select_related('campaign', 'conducted_by'),
+        id=raffle_id,
+    )
     if not request.user.is_superuser and not raffle.campaign.managers.filter(
         id=request.user.id
     ).exists():
@@ -527,7 +530,10 @@ def raffle_audit(request, raffle_id):
 def raffle_audit_json(request, raffle_id):
     """Return the full audit blob as a downloadable JSON file."""
     from .utils import verify_raffle_audit
-    raffle = get_object_or_404(Raffle, id=raffle_id)
+    raffle = get_object_or_404(
+        Raffle.objects.select_related('campaign', 'conducted_by'),
+        id=raffle_id,
+    )
     if not request.user.is_superuser and not raffle.campaign.managers.filter(
         id=request.user.id
     ).exists():
