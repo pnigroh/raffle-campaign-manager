@@ -287,7 +287,13 @@ class SubmissionAdmin(CampaignScopedAdminMixin, ModelAdmin):
 class RaffleAdmin(CampaignScopedAdminMixin, ModelAdmin):
     list_display = ['campaign', 'conducted_at', 'conducted_by', 'total_participants', 'winner_count']
     list_filter = ['campaign']
-    readonly_fields = ['conducted_at', 'total_participants']
+    readonly_fields = [
+        'conducted_at', 'total_participants',
+        'seed', 'algorithm', 'algorithm_version',
+        'participant_pool_snapshot', 'prize_quantities',
+        'consumed_pool', 'excluded_already_participated',
+        'filter_search', 'filter_store_id',
+    ]
 
     def winner_count(self, obj):
         return obj.winners.count()
