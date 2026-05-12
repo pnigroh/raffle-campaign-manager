@@ -432,3 +432,19 @@ class VerifyRaffleAuditTests(TestCase):
         result = verify_raffle_audit(raffle)
         self.assertEqual(result['status'], 'unverifiable')
         self.assertIn('missing', result.get('diff', {}).get('reason', '').lower())
+
+    def test_verify_unverifiable_for_unknown_algorithm(self):
+        from campaigns.utils import conduct_raffle, verify_raffle_audit
+        raffle = conduct_raffle(
+            campaign=self.campaign,
+            prizes_with_quantities=[(self.prize, 3)],
+            submission_qs=self.campaign.submissions.all(),
+            conducted_by=self.alice,
+            consume_pool=False,
+        )
+        # Simulate a future v2.0 algorithm by tampering with the stored field.
+        raffle.algorithm_version = '2.0'
+        raffle.save(update_fields=['algorithm_version'])
+        result = verify_raffle_audit(raffle)
+        self.assertEqual(result['status'], 'unverifiable')
+        self.assertIn('not supported', result['diff']['reason'].lower())

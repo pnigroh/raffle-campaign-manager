@@ -189,6 +189,9 @@ def export_submissions_csv(campaign, submission_qs=None):
 def verify_raffle_audit(raffle):
     """Re-run the recorded raffle inputs and assert the winners reproduce.
 
+    Supports algorithm 'python.random.shuffle' v1.0 only. Other algorithm
+    + version pairs return {'status': 'unverifiable'}.
+
     Returns a dict:
       {'status': 'ok'} if winners reproduce exactly.
       {'status': 'mismatch', 'diff': {...}} if winners differ.
@@ -202,6 +205,11 @@ def verify_raffle_audit(raffle):
     if not raffle.seed or not raffle.participant_pool_snapshot:
         return {'status': 'unverifiable',
                 'diff': {'reason': 'Raffle was conducted before audit logging was added.'}}
+
+    if raffle.algorithm != 'python.random.shuffle' or raffle.algorithm_version != '1.0':
+        return {'status': 'unverifiable',
+                'diff': {'reason': f"Algorithm {raffle.algorithm} v{raffle.algorithm_version} "
+                                   "is not supported by this verifier."}}
 
     snapshot_ids = list(raffle.participant_pool_snapshot)
     pool = list(Submission.objects.filter(id__in=snapshot_ids).order_by('id'))
