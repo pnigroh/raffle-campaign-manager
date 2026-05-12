@@ -27,6 +27,21 @@ DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1')
 ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS_ENV.split(',') if h.strip()]
 
+# Production-only security knobs. All driven by env vars so dev stays unaffected.
+CSRF_TRUSTED_ORIGINS = [
+    o.strip() for o in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
+    if o.strip()
+]
+
+if not DEBUG:
+    # Behind Plesk Nginx, which terminates TLS and sets X-Forwarded-Proto: https.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    USE_X_FORWARDED_HOST = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # Plesk handles HSTS at the Nginx layer; leave Django's HSTS off to avoid
+    # double headers. Re-enable here if you ever serve directly without Plesk.
+
 # Application definition
 INSTALLED_APPS = [
     'unfold',

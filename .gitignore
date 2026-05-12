@@ -40,3 +40,7 @@ htmlcov/
 
 # Superpowers brainstorm session files (visual companion mockups)
 .superpowers/
+
+# Production deployment
+.env.prod
+prod-data/
