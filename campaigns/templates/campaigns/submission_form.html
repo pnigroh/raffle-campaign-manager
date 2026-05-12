@@ -63,7 +63,7 @@
 
     /* Slide 1 uses BG_1 (with product imagery baked in). */
     .stage[data-step="welcome"] {
-      background-image: url("{% static 'campaigns/img/bg_1.webp' %}");
+      background-image: url("{% static 'campaigns/landing/bg_mobile_welcome.png' %}");
     }
 
     /* All others use the empty stadium BG_2. */
@@ -337,6 +337,34 @@
     .btn-block { display: flex; width: 100%; padding: 14px 18px 11px; }
     .btn-wide  { min-width: 180px; }
 
+    /* === Image buttons (welcome EMPEZAR uses a designer-exported PNG) === */
+    .btn-image {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .btn-image img {
+      display: block;
+      width: 100%;
+      max-width: min(70%, 280px);
+      height: auto;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,.18));
+      transition: transform 0.15s ease;
+    }
+
+    .btn-image:hover img,
+    .btn-image:focus img {
+      transform: translateY(-1px) scale(1.02);
+    }
+
+    .btn-image:active img {
+      transform: translateY(0) scale(1);
+    }
+
     /* === Trivia === */
     .trivia-question {
       text-align: center;
@@ -446,15 +474,11 @@
 
   <!-- Step 1: Welcome -->
   <section class="step is-active welcome" data-step="welcome">
-    <h1 class="welcome-headline">¡BIENVENIDO!</h1>
-    <div class="welcome-pill">ESTÁS A PUNTO DE ANOTAR UN</div>
-    <img class="welcome-gol" src="{% static 'campaigns/img/goool.png' %}" alt="GOOOOOL">
-    <div class="welcome-con" aria-hidden="true">
-      <img src="{% static 'campaigns/img/con.png' %}" alt="CON">
-    </div>
     <div class="welcome-spacer"></div>
     <div class="welcome-cta">
-      <button type="button" class="btn btn-white btn-wide" data-go="form">EMPEZAR</button>
+      <button type="button" class="btn-image btn-empezar" data-go="form" aria-label="Empezar">
+        <img src="{% static 'campaigns/landing/btn_empezar.png' %}" alt="">
+      </button>
     </div>
   </section>
 
