@@ -108,10 +108,14 @@ docker compose -f docker-compose.prod.yml exec media-syncer \
 Restore the most recent prior version:
 
 ```bash
-docker compose -f docker-compose.prod.yml exec media-syncer \
-    rclone copyto 'b2:raffle-media-XXXXXX/submissions/<filename>-v<id>.jpg' \
-                  '/data/media/submissions/<filename>.jpg'
+docker compose -f docker-compose.prod.yml run --rm \
+    -v /srv/raffle/media:/data/media \
+    --entrypoint rclone media-syncer \
+    copyto 'b2:raffle-media-XXXXXX/submissions/<filename>-v<id>.jpg' \
+           '/data/media/submissions/<filename>.jpg'
 ```
+
+**Why `run --rm` instead of `exec`:** the running `media-syncer` container has `/data/media` mounted read-only by design (it's a sync source, not a target). The one-off `run --rm` invocation re-mounts it RW for the restore.
 
 (The `inotify` watcher will see the restore as a new file and re-upload it as the current version. No further action needed.)
 
