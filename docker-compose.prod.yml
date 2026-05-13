@@ -22,24 +22,6 @@ services:
       retries: 6
       start_period: 30s
 
-  pgbackrest:
-    build:
-      context: ./docker/pgbackrest
-    image: raffle-pgbackrest:latest
-    container_name: raffle-pgbackrest
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      PG_HOST: postgres
-      PG_USER: pgbackrest
-      PG_DB: ${POSTGRES_DB:-raffledb}
-    volumes:
-      - /srv/raffle/pg:/var/lib/postgresql/data:ro
-      - /srv/raffle/pgbackrest:/var/lib/pgbackrest
-      - /srv/raffle/config/pgbackrest.conf:/etc/pgbackrest/pgbackrest.conf:ro
-
   web:
     build:
       context: .

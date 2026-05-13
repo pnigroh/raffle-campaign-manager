@@ -24,8 +24,7 @@ procedures, see `restore-playbook.md`. For design rationale, see
 | Container | Image | Restart policy | Purpose |
 |---|---|---|---|
 | raffle-prod | raffle-campaign-prod:latest | unless-stopped | Django + gunicorn |
-| raffle-postgres | raffle-postgres:latest | unless-stopped | Postgres 16 + pgBackRest binary |
-| raffle-pgbackrest | raffle-pgbackrest:latest | unless-stopped | Cron-driven full/diff/incr backups |
+| raffle-postgres | raffle-postgres:latest | unless-stopped | Postgres 16 + pgBackRest binary + cron-driven full/diff/incr backups |
 | raffle-media-syncer | raffle-media-syncer:latest | unless-stopped | rclone + inotify event push |
 
 ## Host crons
@@ -47,6 +46,6 @@ procedures, see `restore-playbook.md`. For design rationale, see
 ## On-call commands
 
 - Tail backup activity: `tail -f /var/log/raffle/restic-backup.log /var/log/pgbackrest/cron.log`
-- Force a manual backup: `docker compose -f docker-compose.prod.yml exec pgbackrest su -c 'pgbackrest --stanza=raffle --type=incr backup' postgres`
-- Status of all backups: `docker compose -f docker-compose.prod.yml exec pgbackrest su -c 'pgbackrest --stanza=raffle info' postgres`
+- Force a manual backup: `docker compose -f docker-compose.prod.yml exec -u postgres postgres pgbackrest --stanza=raffle --type=incr backup`
+- Status of all backups: `docker compose -f docker-compose.prod.yml exec -u postgres postgres pgbackrest --stanza=raffle info`
 - Manually run freshness check: `sudo /usr/local/bin/raffle-backup-freshness`

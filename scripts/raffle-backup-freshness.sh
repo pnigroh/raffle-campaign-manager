@@ -38,8 +38,7 @@ fi
 errors=0
 
 # Check 1: latest WAL in B2 archive.
-WAL_TS=$(docker compose -f "$COMPOSE_FILE" exec -T pgbackrest \
-    su -c 'pgbackrest --stanza=raffle info --output=json' postgres \
+WAL_TS=$(docker compose -f "$COMPOSE_FILE" exec -T -u postgres postgres pgbackrest --stanza=raffle info --output=json \
     | python3 -c '
 import json, sys
 data = json.load(sys.stdin)

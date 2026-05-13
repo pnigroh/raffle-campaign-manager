@@ -39,8 +39,8 @@ echo "    dumped $(du -h "$DUMP_FILE" | cut -f1) ($LINES lines)"
 echo "==> Phase 2/7: stop legacy web container (no more writes)"
 $COMPOSE stop web
 
-echo "==> Phase 3/7: bring up Postgres + pgbackrest (waits for healthy)"
-$COMPOSE up -d postgres pgbackrest
+echo "==> Phase 3/7: bring up Postgres (waits for healthy)"
+$COMPOSE up -d postgres
 
 # Give Postgres a few seconds beyond healthcheck to ensure init scripts ran.
 sleep 5

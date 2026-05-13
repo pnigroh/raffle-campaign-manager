@@ -6,6 +6,7 @@ FROM postgres:16-bookworm
 RUN apt-get update && apt-get install -y --no-install-recommends \
         pgbackrest \
         ca-certificates \
+        cron \
     && rm -rf /var/lib/apt/lists/*
 
 # pgBackRest expects /var/lib/pgbackrest (repo1) and /var/spool/pgbackrest
@@ -24,3 +25,13 @@ RUN chmod 644 /etc/postgresql/conf.d/10-pgbackrest.conf
 # Init-time hook that creates a dedicated pgbackrest role with REPLICATION.
 COPY init-pgbackrest-user.sh /docker-entrypoint-initdb.d/10-init-pgbackrest-user.sh
 RUN chmod 755 /docker-entrypoint-initdb.d/10-init-pgbackrest-user.sh
+
+# Cron-based backup scheduler: install crontab + wrapper entrypoint.
+COPY pgbackrest-crontab /etc/cron.d/pgbackrest
+RUN chmod 644 /etc/cron.d/pgbackrest
+
+COPY postgres-entrypoint.sh /usr/local/bin/postgres-entrypoint.sh
+RUN chmod 755 /usr/local/bin/postgres-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/postgres-entrypoint.sh"]
+CMD ["postgres"]

@@ -15,10 +15,9 @@
 ## File structure
 
 ### Created files
-- `docker/postgres/Dockerfile` — custom Postgres image with pgBackRest baked in
-- `docker/pgbackrest/Dockerfile` — sidecar image (Postgres-client + pgBackRest + cron + bash)
-- `docker/pgbackrest/entrypoint.sh` — initializes stanza on first run, then runs cron in foreground
-- `docker/pgbackrest/crontab` — schedules full/diff/incr backups
+- `docker/postgres/Dockerfile` — custom Postgres image with pgBackRest baked in; also installs cron + crontab for scheduled backups (Task 4 obsoleted — see note below)
+- `docker/postgres/postgres-entrypoint.sh` — wrapper entrypoint: starts cron daemon, then execs upstream docker-entrypoint.sh
+- `docker/postgres/pgbackrest-crontab` — schedules full/diff/incr backups (moved from docker/pgbackrest/)
 - `docker/media-syncer/Dockerfile` — alpine + rclone + inotify-tools
 - `docker/media-syncer/entrypoint.sh` — runs inotify watcher + periodic-sync loop
 - `docker/postgres/postgresql.conf.fragment` — archive_mode, archive_command, etc.
@@ -38,7 +37,7 @@
 ### Modified files
 - `requirements.txt` — add `psycopg[binary]>=3.1`, `dj-database-url>=2`
 - `raffle_project/settings.py:92-98` — `DATABASES` reads from `DATABASE_URL`
-- `docker-compose.prod.yml` — add `postgres`, `pgbackrest`, `media-syncer` services; switch `web` to use new Postgres image's network; replace `./prod-data/*` mounts with `/srv/raffle/*`
+- `docker-compose.prod.yml` — add `postgres`, `media-syncer` services (pgbackrest sidecar removed — runs inside postgres container); switch `web` to use new Postgres image's network; replace `./prod-data/*` mounts with `/srv/raffle/*`
 - `.env.example` — document `DATABASE_URL`, `POSTGRES_PASSWORD`, etc.
 - `.gitignore` — already covers `.env.prod` and `prod-data/`; add `/srv-raffle-local/` (optional dev mirror)
 - `Dockerfile.prod` — switch to use the project's wait-for-postgres pattern in CMD
@@ -331,14 +330,18 @@ git commit -m "feat: custom Postgres 16 image with pgBackRest baked in"
 
 ---
 
-## Task 4: Build pgBackRest sidecar image
+## Task 4: Build pgBackRest sidecar image ~~OBSOLETED~~
 
-**Files:**
-- Create: `docker/pgbackrest/Dockerfile`
-- Create: `docker/pgbackrest/entrypoint.sh`
-- Create: `docker/pgbackrest/crontab`
+> **Task 4 obsoleted by smoke-test finding:** the pgbackrest sidecar container cannot reach Postgres without SSH or TLS auth — pgbackrest's connection mechanism is local-socket-or-SSH and neither was configured. WAL archiving and manual backups already worked (they run from inside the postgres container which has pgbackrest installed); only the scheduled cron-driven backups were broken.
+>
+> **Resolution:** cron + crontab are now baked into `docker/postgres/Dockerfile`. The wrapper entrypoint `postgres-entrypoint.sh` starts cron before handing off to the upstream Postgres entrypoint. Topology drops from 4 containers to 3. See spec §6.1 update.
 
-The sidecar runs cron-driven backups (full/diff/incr) AND is the receiving side of `archive-push` when `archive-async` flushes the spool. It needs the same pgBackRest binary version as the Postgres image, plus cron.
+~~**Files:**~~
+~~- Create: `docker/pgbackrest/Dockerfile`~~
+~~- Create: `docker/pgbackrest/entrypoint.sh`~~
+~~- Create: `docker/pgbackrest/crontab`~~
+
+~~The sidecar runs cron-driven backups (full/diff/incr) AND is the receiving side of `archive-push` when `archive-async` flushes the spool. It needs the same pgBackRest binary version as the Postgres image, plus cron.~~
 
 - [ ] **Step 1: Create `docker/pgbackrest/Dockerfile`**
 
@@ -1290,7 +1293,7 @@ git checkout zero-data-loss-backup
 ```bash
 docker compose -f docker-compose.prod.yml build
 ```
-Expected: 4 images built. First build takes a few minutes; subsequent builds are cache-hit.
+Expected: 3 images built (pgbackrest sidecar removed). First build takes a few minutes; subsequent builds are cache-hit.
 
 - [ ] **Step 3: Stop the OLD compose stack (still SQLite)**
 
@@ -1302,10 +1305,10 @@ docker compose -f docker-compose.prod.yml down
 
 The bind mounts under `./prod-data/` are untouched on disk; the SQLite file in `./prod-data/db/` (if any) is preserved for the migration.
 
-- [ ] **Step 4: Bring up Postgres + pgBackRest only (NOT web yet)**
+- [ ] **Step 4: Bring up Postgres only (NOT web yet)**
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d postgres pgbackrest
+docker compose -f docker-compose.prod.yml up -d postgres
 ```
 
 - [ ] **Step 5: Wait for Postgres healthy + verify init scripts ran**
@@ -1319,7 +1322,7 @@ Expected: `database system is ready to accept connections` + the init script out
 - [ ] **Step 6: Verify pgBackRest stanza is created and `check` passes**
 
 ```bash
-docker compose -f docker-compose.prod.yml logs pgbackrest | tail -40
+docker compose -f docker-compose.prod.yml logs postgres | grep -E "(stanza|check|pgbackrest)" | tail -40
 ```
 Expected: lines containing `stanza 'raffle' created` (or "already initialized") followed by `check command end: completed successfully`.
 
@@ -1332,8 +1335,7 @@ sleep 10
 # Local repo
 sudo ls -la /srv/raffle/pgbackrest/archive/raffle/16-1/
 # B2 repo (the same WAL segment should appear here too, after async push)
-docker compose -f docker-compose.prod.yml exec pgbackrest \
-    su -c 'pgbackrest --stanza=raffle info' postgres
+docker compose -f docker-compose.prod.yml exec -u postgres postgres pgbackrest --stanza=raffle info
 ```
 Expected: local archive dir contains `.gz` WAL files; `info` shows recent archive activity.
 

@@ -35,18 +35,17 @@ All five live in the operator password manager. Without them, **no restore is po
 4. Drop the three credential files into `/srv/raffle/config/` (pgbackrest.conf, rclone.conf, restic.env) — copies from your password manager.
 5. Drop `.env.prod` next to `docker-compose.prod.yml`.
 6. Build images: `docker compose -f docker-compose.prod.yml build`.
-7. Start Postgres + pgBackRest (Postgres will start empty):
+7. Start Postgres (Postgres will start empty):
    ```bash
-   docker compose -f docker-compose.prod.yml up -d postgres pgbackrest
+   docker compose -f docker-compose.prod.yml up -d postgres
    ```
-8. Wait for the pgbackrest sidecar to be running, then **stop Postgres** (so we can restore into the empty PGDATA without conflict):
+8. Wait for Postgres to be running, then **stop Postgres** (so we can restore into the empty PGDATA without conflict):
    ```bash
    docker compose -f docker-compose.prod.yml stop postgres
    ```
 9. Restore from B2:
    ```bash
-   docker compose -f docker-compose.prod.yml run --rm pgbackrest \
-       su -c 'pgbackrest --stanza=raffle --repo=2 restore --delta' postgres
+   docker compose -f docker-compose.prod.yml run --rm -u postgres postgres pgbackrest --stanza=raffle --repo=2 restore --delta
    ```
 10. Start Postgres — it replays WAL to the latest archived segment:
     ```bash
@@ -78,9 +77,7 @@ All five live in the operator password manager. Without them, **no restore is po
    ```
 3. Restore to the target time:
    ```bash
-   docker compose -f docker-compose.prod.yml run --rm pgbackrest \
-       su -c "pgbackrest --stanza=raffle --type=time \
-              --target='2026-05-13 14:23:00+00' restore --delta" postgres
+   docker compose -f docker-compose.prod.yml run --rm -u postgres postgres pgbackrest --stanza=raffle --type=time --target='2026-05-13 14:23:00+00' restore --delta
    ```
 4. Start Postgres → replays WAL up to the target time then pauses:
    ```bash

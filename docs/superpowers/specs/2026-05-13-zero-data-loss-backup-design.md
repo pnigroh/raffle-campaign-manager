@@ -48,8 +48,7 @@ The user's stated goal: *"the database and the images submitted by users are 1) 
    │                                                             │
    │   docker compose services:                                  │
    │     web         (Django + gunicorn)                          │
-   │     postgres    (Postgres 16)                                │
-   │     pgbackrest  (backup sidecar; cron inside container)      │
+   │     postgres    (Postgres 16 + pgBackRest cron inside)       │
    │     media-syncer (rclone + inotifywait)                      │
    │                                                             │
    │   Host cron (outside Docker):                                │
@@ -96,8 +95,7 @@ The user's stated goal: *"the database and the images submitted by users are 1) 
 | Service | Type | Responsibility |
 |---|---|---|
 | `web` | container | Django + gunicorn, reads/writes via Postgres and `/srv/raffle/media`. |
-| `postgres` | container | Postgres 16. Configured with `archive_mode=on` and `archive_command` invoking pgBackRest. |
-| `pgbackrest` | sidecar container | Runs cron schedule for `full` (weekly), `diff` (daily), `incr` (hourly). Also serves as the `archive_command` target (continuous WAL push). Two repos: local (`/srv/raffle/pgbackrest`) and B2 (`raffle-pgbackrest`). |
+| `postgres` | container | Postgres 16. Configured with `archive_mode=on` and `archive_command` invoking pgBackRest. Also runs a cron daemon (inside the container) for `full` (weekly), `diff` (daily), `incr` (hourly) backups. Two repos: local (`/srv/raffle/pgbackrest`) and B2 (`raffle-pgbackrest`). |
 | `media-syncer` | sidecar container | Two loops: (1) `inotifywait` on `/srv/raffle/media` → `rclone copyto` to B2 on every fs event; (2) every 10 min, `rclone sync /srv/raffle/media b2:raffle-media` for reconciliation. |
 | host cron | OS-level | Nightly `restic backup /srv/raffle/media /srv/raffle/pgbackrest` → `b2:raffle-archive`, encrypted with an operator-held passphrase. |
 
@@ -171,7 +169,7 @@ pg1-port=5432
 pg1-user=postgres
 ```
 
-**pgBackRest cron schedule** (inside the sidecar):
+**pgBackRest cron schedule** (cron daemon inside the Postgres container):
 
 | Cron | Command | Frequency |
 |---|---|---|
