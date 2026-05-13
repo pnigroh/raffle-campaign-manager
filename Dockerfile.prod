@@ -19,9 +19,11 @@ RUN mkdir -p /app/db /app/staticfiles /app/media
 
 EXPOSE 8000
 
-# Production: gunicorn behind Plesk's Nginx reverse proxy.
-# 3 workers handles a small giveaway form comfortably; bump if you see queueing.
 CMD ["sh", "-c", "\
+  for i in $(seq 1 30); do \
+    python -c 'import os, psycopg; psycopg.connect(os.environ[\"DATABASE_URL\"]).close()' 2>/dev/null && break; \
+    echo 'web: waiting for postgres...'; sleep 2; \
+  done && \
   python manage.py migrate --noinput && \
   python manage.py collectstatic --noinput && \
   exec gunicorn raffle_project.wsgi:application \

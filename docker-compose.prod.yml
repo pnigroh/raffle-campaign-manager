@@ -1,6 +1,45 @@
 name: raffle-campaign-prod
 
 services:
+  postgres:
+    build:
+      context: ./docker/postgres
+    image: raffle-postgres:latest
+    container_name: raffle-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-raffledb}
+      POSTGRES_USER: ${POSTGRES_USER:-raffleuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env.prod}
+    volumes:
+      - /srv/raffle/pg:/var/lib/postgresql/data
+      - /srv/raffle/pgbackrest:/var/lib/pgbackrest
+      - /srv/raffle/config/pgbackrest.conf:/etc/pgbackrest/pgbackrest.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+  pgbackrest:
+    build:
+      context: ./docker/pgbackrest
+    image: raffle-pgbackrest:latest
+    container_name: raffle-pgbackrest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PG_HOST: postgres
+      PG_USER: pgbackrest
+      PG_DB: ${POSTGRES_DB:-raffledb}
+    volumes:
+      - /srv/raffle/pg:/var/lib/postgresql/data:ro
+      - /srv/raffle/pgbackrest:/var/lib/pgbackrest
+      - /srv/raffle/config/pgbackrest.conf:/etc/pgbackrest/pgbackrest.conf:ro
+
   web:
     build:
       context: .
@@ -8,16 +47,33 @@ services:
     image: raffle-campaign-prod:latest
     container_name: raffle-prod
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
-      - "127.0.0.1:8500:8000"  # bind to localhost only; Plesk Nginx proxies to it
+      - "127.0.0.1:8500:8000"
     env_file: .env.prod
     volumes:
-      - ./prod-data/db:/app/db
-      - ./prod-data/media:/app/media
-      - ./prod-data/staticfiles:/app/staticfiles
+      - /srv/raffle/media:/app/media
+      - /srv/raffle/staticfiles:/app/staticfiles
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/dashboard/login/')"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
+
+  media-syncer:
+    build:
+      context: ./docker/media-syncer
+    image: raffle-media-syncer:latest
+    container_name: raffle-media-syncer
+    restart: unless-stopped
+    environment:
+      WATCH_DIR: /data/media
+      REMOTE: b2:raffle-media
+      SYNC_INTERVAL: "600"
+      RCLONE_CONFIG: /config/rclone.conf
+    volumes:
+      - /srv/raffle/media:/data/media:ro
+      - /srv/raffle/config/rclone.conf:/config/rclone.conf:ro
