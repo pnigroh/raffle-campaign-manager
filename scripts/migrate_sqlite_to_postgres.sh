@@ -16,7 +16,19 @@ DUMP_FILE="${MIGRATION_DIR}/sqlite_dump.json"
 
 mkdir -p "$MIGRATION_DIR"
 
-echo "==> Phase 1/6: dump SQLite data via the running legacy container"
+echo "==> Phase 0/7: capture SQLite row counts as pre-migration baseline"
+$COMPOSE exec -T web python manage.py shell <<'PY' > "${MIGRATION_DIR}/precount.txt"
+from campaigns.models import Campaign, Submission, Raffle
+from django.contrib.auth.models import User
+print(f"campaigns_campaign: {Campaign.objects.count()}")
+print(f"campaigns_submission: {Submission.objects.count()}")
+print(f"campaigns_raffle: {Raffle.objects.count()}")
+print(f"auth_user: {User.objects.count()}")
+PY
+echo "    baseline written to ${MIGRATION_DIR}/precount.txt:"
+cat "${MIGRATION_DIR}/precount.txt"
+
+echo "==> Phase 1/7: dump SQLite data via the running legacy container"
 $COMPOSE exec -T web python manage.py dumpdata \
     --natural-foreign --natural-primary \
     --exclude=contenttypes --exclude=auth.permission --exclude=sessions \
@@ -24,21 +36,21 @@ $COMPOSE exec -T web python manage.py dumpdata \
 LINES=$(wc -l < "$DUMP_FILE")
 echo "    dumped $(du -h "$DUMP_FILE" | cut -f1) ($LINES lines)"
 
-echo "==> Phase 2/6: stop legacy web container (no more writes)"
+echo "==> Phase 2/7: stop legacy web container (no more writes)"
 $COMPOSE stop web
 
-echo "==> Phase 3/6: bring up Postgres + pgbackrest (waits for healthy)"
+echo "==> Phase 3/7: bring up Postgres + pgbackrest (waits for healthy)"
 $COMPOSE up -d postgres pgbackrest
 
 # Give Postgres a few seconds beyond healthcheck to ensure init scripts ran.
 sleep 5
 
-echo "==> Phase 4/6: run Django migrations on the empty Postgres DB"
+echo "==> Phase 4/7: run Django migrations on the empty Postgres DB"
 # Temporarily start a one-off web container with the new DATABASE_URL.
 # This requires .env.prod to already be flipped to the Postgres URL.
 $COMPOSE run --rm --no-deps web python manage.py migrate --noinput
 
-echo "==> Phase 5/6: loaddata + reset sequences"
+echo "==> Phase 5/7: loaddata + reset sequences"
 # Copy the dump into the web image's filesystem at /tmp and load it.
 # Using --rm + a volume mount keeps the migration ephemeral.
 $COMPOSE run --rm --no-deps -v "$MIGRATION_DIR":/migration web \
@@ -47,7 +59,7 @@ $COMPOSE run --rm --no-deps -v "$MIGRATION_DIR":/migration web \
 $COMPOSE run --rm --no-deps web \
     python -m scripts.reset_postgres_sequences
 
-echo "==> Phase 6/6: start web container against Postgres"
+echo "==> Phase 6/7: start web container against Postgres"
 $COMPOSE up -d web media-syncer
 
 echo "==> Verification"
