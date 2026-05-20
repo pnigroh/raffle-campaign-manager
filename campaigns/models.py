@@ -274,3 +274,41 @@ class RaffleWinner(models.Model):
 
     def __str__(self):
         return f"{self.submission.full_name} won {self.prize.name}"
+
+
+class Theme(models.Model):
+    name = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True)
+    description = models.CharField(max_length=500, blank=True)
+    is_default = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        "auth.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="themes_created",
+    )
+
+    class Meta:
+        ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["is_default"],
+                condition=models.Q(is_default=True),
+                name="only_one_default_theme",
+            ),
+        ]
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def directory(self):
+        from pathlib import Path
+        from django.conf import settings as dj_settings
+        return Path(dj_settings.THEMES_ROOT) / self.slug
+
+    @classmethod
+    def get_default(cls):
+        return cls.objects.get(is_default=True)
