@@ -3,6 +3,28 @@ from django.contrib.auth.models import User
 from django.utils.text import slugify
 import uuid
 
+from .managers import CampaignQuerySet, DomainQuerySet
+
+
+class Domain(models.Model):
+    hostname = models.CharField(max_length=253, unique=True)
+    display_name = models.CharField(max_length=200, blank=True)
+    managers = models.ManyToManyField(
+        "auth.User",
+        blank=True,
+        related_name="managed_domains",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = DomainQuerySet.as_manager()
+
+    class Meta:
+        ordering = ["hostname"]
+
+    def __str__(self):
+        return self.hostname
+
 
 class Campaign(models.Model):
     name = models.CharField(max_length=200)
