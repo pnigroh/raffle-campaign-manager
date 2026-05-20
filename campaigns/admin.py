@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.urls import reverse
 from unfold.admin import ModelAdmin, TabularInline
-from .models import Campaign, Prize, SubmissionCode, Submission, Raffle, RaffleWinner, Store
+from .models import Campaign, Domain, Prize, SubmissionCode, Submission, Raffle, RaffleWinner, Store
 
 
 def _user_managed_campaign_ids(request):
@@ -66,6 +66,31 @@ class SubmissionCodeInline(TabularInline):
     readonly_fields = ['used_at']
     max_num = 20
     show_change_link = True
+
+
+@admin.register(Domain)
+class DomainAdmin(ModelAdmin):
+    list_display = ("hostname", "display_name", "manager_count", "campaign_count")
+    search_fields = ("hostname", "display_name")
+    filter_horizontal = ("managers",)
+    ordering = ("hostname",)
+
+    def get_queryset(self, request):
+        return Domain.objects.visible_to(request.user)
+
+    @admin.display(description="Managers")
+    def manager_count(self, obj):
+        return obj.managers.count()
+
+    @admin.display(description="Campaigns")
+    def campaign_count(self, obj):
+        return obj.campaigns.count()
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
 
 
 @admin.register(Campaign)

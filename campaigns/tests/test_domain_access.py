@@ -139,3 +139,31 @@ class PublicViewHostGateTests(TestCase):
     def test_submission_success_404_on_wrong_host(self):
         r = self.client.get("/submit/summer/success/", HTTP_HOST="b.test")
         self.assertEqual(r.status_code, 404)
+
+
+from django.urls import reverse
+
+
+class DomainAdminTests(TestCase):
+    def setUp(self):
+        self.su = User.objects.create_superuser("root", "r@x.test", "x")
+        self.manager = User.objects.create_user(
+            "alice", "a@x.test", "x", is_staff=True
+        )
+        from django.contrib.auth.models import Group
+        Group.objects.get(name="Campaign Managers").user_set.add(self.manager)
+        self.a = Domain.objects.create(hostname="a.test")
+        self.b = Domain.objects.create(hostname="b.test")
+        self.a.managers.add(self.manager)
+
+    def test_superuser_admin_shows_all_domains(self):
+        self.client.force_login(self.su)
+        r = self.client.get(reverse("admin:campaigns_domain_changelist"))
+        self.assertContains(r, "a.test")
+        self.assertContains(r, "b.test")
+
+    def test_manager_admin_shows_only_own_domains(self):
+        self.client.force_login(self.manager)
+        r = self.client.get(reverse("admin:campaigns_domain_changelist"))
+        self.assertContains(r, "a.test")
+        self.assertNotContains(r, "b.test")
