@@ -80,3 +80,13 @@ class ThemeStaticTagTests(TestCase):
         tpl = Template("{% load theme_tags %}{% theme_static 'fonts/foo.woff2' %}")
         rendered = tpl.render(Context({"theme": theme}))
         self.assertEqual(rendered, "/theme-assets/x-nested/fonts/foo.woff2")
+
+
+class DefaultThemeDirectoryTests(TestCase):
+    def test_default_theme_directory_is_populated_after_migrate(self):
+        from django.conf import settings
+        default = Theme.get_default()
+        directory = Path(settings.THEMES_ROOT) / default.slug
+        self.assertTrue(directory.is_dir(), f"{directory} missing")
+        self.assertTrue((directory / "submission_form.html").is_file())
+        self.assertTrue((directory / "submission_success.html").is_file())

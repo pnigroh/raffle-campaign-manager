@@ -1,0 +1,854 @@
+{% load theme_tags %}<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0e6dc2">
+  <title>{{ campaign.name }}</title>
+
+  <style>
+    @font-face {
+      font-family: 'Andreas';
+      src: url("{% theme_static 'fonts/Andreas.ttf' %}") format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --red: #e30613;
+      --red-dark: #b00510;
+      --red-shadow: rgba(176,5,16,.35);
+      --ink: #1a1a1a;
+      --ink-soft: #4b4b4b;
+      --field-bg: #ececec;
+      --field-border: #d8d8d8;
+      --card-bg: #ffffff;
+      --card-radius: 26px;
+      --pill-radius: 999px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      margin: 0; padding: 0;
+      min-height: 100%;
+      font-family: 'Gotham', 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      min-height: 100dvh;
+      background: #0e6dc2;
+      overflow-x: hidden;
+    }
+
+    /* The "phone screen" canvas - centers a 9:19.5-ish stage on any viewport. */
+    .stage {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      min-height: 100dvh;
+      margin: 0 auto;
+      background-position: center top;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-color: #0e6dc2;
+      transition: background-image .25s ease;
+      padding: clamp(24px, 6vw, 40px) clamp(20px, 5vw, 32px);
+      padding-bottom: max(env(safe-area-inset-bottom, 0px), 32px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Slide 1 uses BG_1 (with product imagery baked in). */
+    .stage[data-step="welcome"] {
+      background-image: url("{% theme_static 'landing/bg_mobile_welcome.png' %}");
+    }
+
+    /* All others use the blurred stadium BG. */
+    .stage[data-step="form"],
+    .stage[data-step="trivia"],
+    .stage[data-step="success"],
+    .stage[data-step="fail"] {
+      background-image: url("{% theme_static 'landing/bg_mobile_steps.png' %}");
+    }
+
+    @media (min-width: 768px) {
+      body {
+        background: #0e6dc2 url("{% theme_static 'landing/bg_desktop.png' %}") center center / cover no-repeat fixed;
+        overflow-x: hidden;
+        padding: 0;
+        display: block;
+      }
+
+      .stage,
+      .stage[data-step="welcome"],
+      .stage[data-step="form"],
+      .stage[data-step="trivia"],
+      .stage[data-step="success"],
+      .stage[data-step="fail"] {
+        background: transparent;
+        background-image: none;
+        box-shadow: none;
+        border-radius: 0;
+        max-width: none;
+        min-height: 100dvh;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+      }
+
+      .step {
+        width: 100%;
+        max-width: 480px;
+        margin-right: clamp(24px, 6vw, 96px);
+        padding: 24px;
+        flex: 0 1 auto;
+      }
+
+      .welcome {
+        align-items: center;
+        justify-content: center;
+      }
+
+      .welcome .welcome-spacer { display: none; }
+
+      /* Desktop: logo ALWAYS visible at top-left of viewport on every step.
+         position: fixed bypasses ancestor positioning chain. !important
+         overrides the mobile hide rules for form/trivia. */
+      .brand-logo,
+      .stage[data-step="form"] .brand-logo,
+      .stage[data-step="trivia"] .brand-logo {
+        display: block !important;
+        position: fixed;
+        top: clamp(24px, 5vh, 80px);
+        left: clamp(24px, 4vw, 96px);
+        margin: 0 !important;
+        width: auto;
+        max-width: min(28vw, 360px);
+        z-index: 50;
+      }
+
+      .titular {
+        margin-top: 0;
+      }
+
+      .titular-stack {
+        margin-top: 0;
+      }
+
+      .card {
+        margin-top: 18px;
+      }
+    }
+
+    /* Steps - only one is visible at a time. */
+    .step { display: none; flex: 1; flex-direction: column; }
+    .step.is-active { display: flex; }
+
+    /* === Welcome (slide 1) === */
+    .welcome { position: relative; }
+    .welcome-spacer { flex: 1; }
+    .welcome-cta {
+      display: flex;
+      justify-content: center;
+      padding-bottom: 5%;
+      position: relative;
+      z-index: 3;
+    }
+
+    .welcome-headline {
+      font-family: 'Andreas', 'Anton', 'Bebas Neue', system-ui, sans-serif;
+      color: #fff;
+      text-align: center;
+      letter-spacing: .04em;
+      font-size: clamp(30px, 8.6vw, 42px);
+      line-height: 1;
+      margin: 2% 0 0;
+      text-shadow: 0 2px 6px rgba(0,0,0,.18);
+    }
+
+    /* Brand logo: visible on welcome/success/fail (mobile), always (desktop).
+       Lives outside the step sections; CSS controls visibility per data-step. */
+    .brand-logo {
+      display: block;
+      width: 100%;
+      max-width: min(72%, 320px);
+      height: auto;
+      margin: 4% auto 0;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,.22));
+    }
+
+    /* Mobile: hide on the form + trivia steps (only show on welcome/success/fail) */
+    .stage[data-step="form"] .brand-logo,
+    .stage[data-step="trivia"] .brand-logo {
+      display: none;
+    }
+
+    .welcome-pill {
+      background: var(--red);
+      color: #fff;
+      font-family: 'Andreas', 'Anton', 'Bebas Neue', system-ui, sans-serif;
+      text-align: center;
+      letter-spacing: .04em;
+      border-radius: var(--pill-radius);
+      padding: 14px 22px 11px;
+      font-size: clamp(18px, 5.4vw, 24px);
+      line-height: 1;
+      box-shadow: 0 6px 14px var(--red-shadow);
+      margin: 12px auto 0;
+      max-width: 96%;
+    }
+
+    .welcome-gol {
+      display: block;
+      width: 100%;
+      max-width: min(96%, 420px);
+      height: auto;
+      margin: 6px auto 0;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,.22));
+    }
+
+    .welcome-con {
+      position: absolute;
+      left: 6%;
+      top: 47%;
+      width: clamp(70px, 20%, 96px);
+      aspect-ratio: 1 / 1;
+      filter: drop-shadow(0 8px 18px rgba(176,5,16,.3));
+      z-index: 2;
+    }
+    .welcome-con img { width: 100%; height: 100%; display: block; }
+
+    /* White button variant used on slide 1 */
+    .btn.btn-white {
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 8px 18px rgba(0,0,0,.18);
+    }
+    .btn.btn-white:hover:not(:disabled) {
+      background: #f4f6fb;
+      color: var(--ink);
+      box-shadow: 0 12px 22px rgba(0,0,0,.22);
+    }
+
+    /* === Pill banner used as section heading on slide 2 === */
+    .pill-heading {
+      display: block;
+      text-align: center;
+      background: var(--red);
+      color: #fff;
+      font-family: 'Andreas', 'Anton', 'Bebas Neue', system-ui, sans-serif;
+      font-weight: 400;
+      letter-spacing: .03em;
+      border-radius: var(--pill-radius);
+      padding: 12px 16px 8px;
+      margin: 7% auto 0;
+      font-size: clamp(17px, 5.2vw, 23px);
+      line-height: 1;
+      box-shadow: 0 6px 14px var(--red-shadow);
+      max-width: 100%;
+      width: fit-content;
+    }
+    .pill-heading + .pill-heading {
+      margin-top: 8px;
+    }
+
+    /* === Designer-exported titulars (form / trivia / success / fail) === */
+    .titular {
+      display: block;
+      width: 100%;
+      max-width: min(96%, 420px);
+      height: auto;
+      margin: 7% auto 0;
+      filter: drop-shadow(0 6px 14px var(--red-shadow));
+    }
+
+    .titular-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+      margin-top: 7%;
+    }
+
+    .titular-stack .titular {
+      margin-top: 0;
+      max-width: min(96%, 360px);
+    }
+
+    /* === Card used on form / trivia / result screens === */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--card-radius);
+      padding: 22px 22px 26px;
+      margin-top: 18px;
+      box-shadow: 0 18px 40px rgba(0,0,0,.18);
+    }
+
+    .card.compact { padding: 26px 22px; }
+
+    /* === Form fields === */
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      font-weight: 700;
+      font-size: 13.5px;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .field input[type="text"],
+    .field input[type="email"],
+    .field input[type="tel"],
+    .field select {
+      width: 100%;
+      background: var(--field-bg);
+      border: 1px solid var(--field-border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 14.5px;
+      color: var(--ink);
+      font-family: inherit;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .field select {
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' width='12' height='8'><path fill='%23606060' d='M6 8 0 0h12z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+    .field input:focus,
+    .field select:focus {
+      outline: none;
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(227,6,19,.15);
+    }
+    .err {
+      color: var(--red);
+      font-size: 12.5px;
+      margin-top: 4px;
+      font-weight: 600;
+      display: none;
+    }
+    .has-error > .err,
+    .has-error .err { display: block; }
+    .field.has-error input,
+    .field.has-error select { border-color: var(--red); }
+
+    /* === File upload === */
+    .upload {
+      display: flex;
+      flex-direction: column;
+    }
+    .upload label.upload-label {
+      font-weight: 700;
+      font-size: 13.5px;
+      margin-bottom: 6px;
+    }
+    .upload-drop {
+      background: var(--field-bg);
+      border-radius: 12px;
+      min-height: 130px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      border: 1px dashed transparent;
+      transition: border-color .15s, background .15s;
+    }
+    .upload-drop:hover { border-color: #b8b8b8; }
+    .upload-drop.has-file { background: #f4f4f4; }
+    .upload-drop input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer;
+    }
+    .upload-icon {
+      width: 56px; height: 56px;
+      display: grid; place-items: center;
+      color: #9a9a9a;
+    }
+    .upload-icon svg { width: 100%; height: 100%; }
+    .upload-thumb {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+    .upload-filename {
+      position: absolute;
+      bottom: 6px;
+      left: 8px; right: 8px;
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--ink-soft);
+      background: rgba(255,255,255,.85);
+      border-radius: 6px;
+      padding: 2px 6px;
+      pointer-events: none;
+    }
+
+    /* === Buttons === */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--red);
+      color: #fff;
+      font-family: 'Andreas', 'Anton', 'Bebas Neue', system-ui, sans-serif;
+      font-weight: 400;
+      letter-spacing: .06em;
+      border: none;
+      border-radius: var(--pill-radius);
+      padding: 14px 38px 11px;
+      font-size: clamp(18px, 5.4vw, 22px);
+      cursor: pointer;
+      box-shadow: 0 8px 18px var(--red-shadow);
+      transition: transform .12s, background .15s, box-shadow .15s;
+      text-decoration: none;
+      line-height: 1;
+    }
+    .btn:hover:not(:disabled) {
+      background: var(--red-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 12px 22px var(--red-shadow);
+    }
+    .btn:active:not(:disabled) { transform: translateY(0); }
+    .btn:disabled { opacity: .65; cursor: not-allowed; }
+
+    .btn-block { display: flex; width: 100%; padding: 14px 18px 11px; }
+    .btn-wide  { min-width: 180px; }
+
+    /* === Image buttons (welcome EMPEZAR uses a designer-exported PNG) === */
+    .btn-image {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .btn-image img {
+      display: block;
+      width: 100%;
+      max-width: min(70%, 280px);
+      height: auto;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,.18));
+      transition: transform 0.15s ease;
+    }
+
+    .btn-image:hover img,
+    .btn-image:focus img {
+      transform: translateY(-1px) scale(1.02);
+    }
+
+    .btn-image:active img {
+      transform: translateY(0) scale(1);
+    }
+
+    /* === Trivia === */
+    .trivia-question {
+      text-align: center;
+      font-weight: 700;
+      font-size: 14px;
+      margin: 4px 0 14px;
+    }
+    .trivia-prompt {
+      text-align: center;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--ink);
+      margin: 14px 0 14px;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 4px;
+      cursor: pointer;
+      font-size: 14.5px;
+      color: var(--ink);
+    }
+    .option input { position: absolute; opacity: 0; pointer-events: none; }
+    .option .dot {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 1.5px solid #9a9a9a;
+      flex-shrink: 0;
+      position: relative;
+      transition: border-color .15s;
+    }
+    .option input:checked + .dot { border-color: var(--red); }
+    .option input:checked + .dot::after {
+      content: '';
+      position: absolute;
+      inset: 3px;
+      background: var(--red);
+      border-radius: 50%;
+    }
+
+    /* === Result screens === */
+    .result-card {
+      text-align: center;
+      padding: 28px 24px 26px;
+    }
+    .result-card p {
+      font-weight: 700;
+      font-size: 15px;
+      margin: 4px 0 18px;
+    }
+
+    /* === Common === */
+    .center-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 6px;
+    }
+    .alert {
+      background: rgba(227,6,19,.92);
+      color: #fff;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 13.5px;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    .closed-screen {
+      margin: auto;
+      text-align: center;
+      color: #fff;
+      max-width: 320px;
+      background: rgba(0,0,0,.45);
+      border-radius: 18px;
+      padding: 28px 24px;
+    }
+    .closed-screen h2 { margin: 0 0 8px; font-size: 22px; }
+    .closed-screen p { margin: 0; opacity: .9; }
+
+    /* Loading state */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="stage" id="stage" data-step="welcome">
+
+  {% if not campaign_open %}
+    <div class="closed-screen">
+      <h2>Campaña cerrada</h2>
+      <p>El periodo de participación de <strong>{{ campaign.name }}</strong> ha finalizado. ¡Gracias por tu interés!</p>
+    </div>
+  {% else %}
+
+  <!-- Brand logo: a single element, controlled by CSS per viewport + step -->
+  <img class="brand-logo" src="{% theme_static 'landing/logo_nube.png' %}"
+       alt="La Nube que te mueve... y te lleva al gol">
+
+  <!-- Step 1: Welcome -->
+  <section class="step is-active welcome" data-step="welcome">
+    <h1 class="welcome-headline">¡BIENVENIDO!</h1>
+    <div class="welcome-spacer"></div>
+    <div class="welcome-cta">
+      <button type="button" class="btn btn-white btn-wide" data-go="form">EMPEZAR</button>
+    </div>
+  </section>
+
+  <!-- Step 2: Form -->
+  <section class="step" data-step="form">
+    <h1 class="pill-heading">ANOTA TUS DATOS</h1>
+    <h2 class="pill-heading">Y COMIENZA A PARTICIPAR</h2>
+
+    <div class="card">
+      <div id="formErrors"></div>
+
+      <form id="entryForm" method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <div class="field">
+          <label for="id_first_name">Nombre</label>
+          <input type="text" id="id_first_name" name="first_name" autocomplete="given-name" required>
+          <div class="err" data-err-for="first_name">Ingresa tu nombre.</div>
+        </div>
+
+        <div class="field">
+          <label for="id_last_name">Apellidos</label>
+          <input type="text" id="id_last_name" name="last_name" autocomplete="family-name" required>
+          <div class="err" data-err-for="last_name">Ingresa tus apellidos.</div>
+        </div>
+
+        <div class="field">
+          <label for="id_phone">Teléfono</label>
+          <input type="tel" id="id_phone" name="phone" autocomplete="tel" inputmode="tel" required>
+          <div class="err" data-err-for="phone">Ingresa un teléfono válido.</div>
+        </div>
+
+        <div class="field">
+          <label for="id_email">Correo electrónico</label>
+          <input type="email" id="id_email" name="email" autocomplete="email" required>
+          <div class="err" data-err-for="email">Ingresa un correo válido.</div>
+        </div>
+
+        <div class="field">
+          <label for="id_store">Lugar donde compraste el producto.</label>
+          <select id="id_store" name="store" required>
+            <option value="">Selecciona un lugar</option>
+            {% for choice in form.fields.store.queryset %}
+              <option value="{{ choice.id }}">{{ choice.name }}</option>
+            {% endfor %}
+          </select>
+          <div class="err" data-err-for="store">Selecciona un lugar.</div>
+        </div>
+
+        <!-- Hidden fields the backend still expects -->
+        <input type="hidden" name="state" value="">
+        <input type="hidden" name="county" value="">
+        <input type="hidden" name="submission_code_input" value="">
+
+        <div class="upload">
+          <label class="upload-label" for="id_image_1">Suba aquí una foto de tu factura de compra</label>
+          <div class="upload-drop" id="uploadDrop">
+            <input type="file" id="id_image_1" name="image_1" accept="image/*" required>
+            <div class="upload-icon" id="uploadIcon" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 44v8a4 4 0 0 0 4 4h36a4 4 0 0 0 4-4v-8"/>
+                <path d="M32 12v28"/>
+                <path d="M20 24l12-12 12 12"/>
+              </svg>
+            </div>
+            <img class="upload-thumb" id="uploadThumb" alt="" hidden>
+            <div class="upload-filename" id="uploadFilename" hidden></div>
+          </div>
+          <div class="err" data-err-for="image_1" style="margin-top:6px;">Adjunta una foto de tu factura.</div>
+        </div>
+
+        <div class="center-actions" style="margin-top: 22px;">
+          <button type="submit" class="btn btn-wide" id="submitBtn">ENVIAR</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Step 3: Trivia -->
+  <section class="step" data-step="trivia">
+    <h1 class="pill-heading">¡YA ESTÁS JUGANDO!</h1>
+
+    <div class="card">
+      <p class="trivia-question">
+        Escoge la respuesta correcta de estas tres opciones y<br>
+        te diremos el nivel de pasión futbolera que tienes:
+      </p>
+
+      <p class="trivia-prompt">¿En dónde se jugará el Mundial 2026?</p>
+
+      <div class="options">
+        <label class="option">
+          <input type="radio" name="trivia" value="0">
+          <span class="dot" aria-hidden="true"></span>
+          <span>Canadá / Estados Unidos / Guatemala</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="trivia" value="1">
+          <span class="dot" aria-hidden="true"></span>
+          <span>Estados Unidos / México / Alaska</span>
+        </label>
+        <label class="option">
+          <input type="radio" name="trivia" value="2">
+          <span class="dot" aria-hidden="true"></span>
+          <span>Canadá / Estados Unidos / México</span>
+        </label>
+      </div>
+
+      <div class="center-actions">
+        <button type="button" class="btn btn-wide" id="guessBtn" disabled>ADIVINAR</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 4: Success -->
+  <section class="step" data-step="success">
+    <img class="titular" src="{% theme_static 'landing/titular_crack.png' %}" alt="¡Eres un crack!">
+    <div class="card result-card">
+      <p>Esperamos que pronto cantes tu gol.</p>
+      <button type="button" class="btn btn-wide" data-finalize>FINALIZAR</button>
+    </div>
+  </section>
+
+  <!-- Step 5: Fail -->
+  <section class="step" data-step="fail">
+    <img class="titular" src="{% theme_static 'landing/titular_fallaste.png' %}" alt="¡Fallaste!">
+    <div class="card result-card">
+      <p>Pero sigue jugando con nosotros.</p>
+      <button type="button" class="btn btn-wide" data-finalize>FINALIZAR</button>
+    </div>
+  </section>
+
+  {% endif %}
+</div>
+
+<script>
+  (function () {
+    const stage = document.getElementById('stage');
+    if (!stage) return;
+    const steps = stage.querySelectorAll('.step');
+
+    function go(name) {
+      steps.forEach(s => s.classList.toggle('is-active', s.dataset.step === name));
+      stage.dataset.step = name;
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
+    // EMPEZAR -> form
+    stage.querySelectorAll('[data-go]').forEach(btn => {
+      btn.addEventListener('click', () => go(btn.dataset.go));
+    });
+
+    // Dev/QA: allow ?step=form|trivia|success|fail to deep-link a specific step
+    const params = new URLSearchParams(window.location.search);
+    const wanted = params.get('step');
+    if (wanted && stage.querySelector(`.step[data-step="${wanted}"]`)) {
+      go(wanted);
+    }
+
+    // FINALIZAR -> reload to a fresh welcome
+    stage.querySelectorAll('[data-finalize]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        window.location.href = window.location.pathname;
+      });
+    });
+
+    // ---------- Form ----------
+    const form = document.getElementById('entryForm');
+    if (form) {
+      const submitBtn = document.getElementById('submitBtn');
+      const errorBox = document.getElementById('formErrors');
+
+      // File preview
+      const fileInput = document.getElementById('id_image_1');
+      const drop = document.getElementById('uploadDrop');
+      const icon = document.getElementById('uploadIcon');
+      const thumb = document.getElementById('uploadThumb');
+      const fname = document.getElementById('uploadFilename');
+
+      fileInput.addEventListener('change', () => {
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) return;
+        drop.classList.add('has-file');
+        icon.hidden = true;
+        thumb.hidden = false;
+        thumb.src = URL.createObjectURL(file);
+        fname.hidden = false;
+        fname.textContent = file.name;
+        clearFieldError('image_1');
+      });
+
+      function clearFieldError(name) {
+        const f = form.querySelector(`[data-err-for="${name}"]`);
+        if (f) f.parentElement.classList.remove('has-error');
+      }
+      function setFieldError(name, msg) {
+        const f = form.querySelector(`[data-err-for="${name}"]`);
+        if (!f) return;
+        f.parentElement.classList.add('has-error');
+        if (msg) f.textContent = msg;
+      }
+
+      // Clear error styling as the user edits
+      form.querySelectorAll('input, select').forEach(el => {
+        el.addEventListener('input', () => clearFieldError(el.name));
+        el.addEventListener('change', () => clearFieldError(el.name));
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorBox.innerHTML = '';
+        // Reset visible errors
+        form.querySelectorAll('.field.has-error, .upload + .err').forEach(el => el.classList.remove('has-error'));
+
+        // Native required check
+        if (!form.checkValidity()) {
+          form.querySelectorAll(':invalid').forEach(el => setFieldError(el.name));
+          // Scroll to first error
+          const firstErr = form.querySelector('.field.has-error');
+          if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+
+        submitBtn.disabled = true;
+        const original = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="spinner"></span>';
+
+        try {
+          const fd = new FormData(form);
+          const res = await fetch(window.location.pathname, {
+            method: 'POST',
+            body: fd,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            redirect: 'follow',
+          });
+
+          // The backend redirects to /success/ on a valid submission; treat any
+          // 2xx response (including the redirect target) as success.
+          if (res.ok && res.url && res.url.includes('/success/')) {
+            go('trivia');
+            return;
+          }
+          if (res.ok) {
+            // Server returned 200 but didn't redirect -> probably re-rendered
+            // the form with errors. Try to surface them.
+            const html = await res.text();
+            const parsed = new DOMParser().parseFromString(html, 'text/html');
+            const errs = parsed.querySelectorAll('.invalid-feedback, .errorlist li');
+            if (errs.length) {
+              errorBox.innerHTML = '<div class="alert">' + Array.from(errs).map(e => e.textContent.trim()).join(' · ') + '</div>';
+            } else {
+              errorBox.innerHTML = '<div class="alert">No pudimos enviar tu participación. Revisa los datos e inténtalo de nuevo.</div>';
+            }
+            return;
+          }
+          throw new Error('HTTP ' + res.status);
+        } catch (err) {
+          errorBox.innerHTML = '<div class="alert">Hubo un problema enviando tu participación. Inténtalo de nuevo.</div>';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = original;
+        }
+      });
+    }
+
+    // ---------- Trivia ----------
+    const guessBtn = document.getElementById('guessBtn');
+    if (guessBtn) {
+      const radios = document.querySelectorAll('input[name="trivia"]');
+      radios.forEach(r => r.addEventListener('change', () => { guessBtn.disabled = false; }));
+      guessBtn.addEventListener('click', () => {
+        const picked = document.querySelector('input[name="trivia"]:checked');
+        if (!picked) return;
+        go(picked.value === '2' ? 'success' : 'fail');
+      });
+    }
+  })();
+</script>
+
+</body>
+</html>
