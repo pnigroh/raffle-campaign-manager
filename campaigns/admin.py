@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin, messages
+from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.utils.html import format_html
 from django.urls import reverse
@@ -137,14 +138,15 @@ class CampaignAdmin(ModelAdmin):
             if obj.domain_id not in Domain.objects.visible_to(
                 request.user
             ).values_list("id", flat=True):
-                from django.core.exceptions import PermissionDenied
                 raise PermissionDenied("You don't manage that domain.")
         super().save_model(request, obj, form, change)
 
     def has_change_permission(self, request, obj=None):
-        if obj is None or request.user.is_superuser:
+        if request.user.is_superuser:
+            return True
+        if obj is None:
             return super().has_change_permission(request, obj)
-        return super().has_change_permission(request, obj) and obj.managers.filter(id=request.user.id).exists()
+        return Campaign.objects.visible_to(request.user).filter(pk=obj.pk).exists()
 
     def has_delete_permission(self, request, obj=None):
         if request.user.is_superuser:

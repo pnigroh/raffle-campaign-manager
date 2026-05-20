@@ -200,6 +200,12 @@ class CampaignAdminScopingTests(TestCase):
         # Django admin returns 302 to the changelist when get_object returns None
         self.assertIn(r.status_code, (302, 404))
 
+    def test_domain_manager_can_open_own_campaign_change_page(self):
+        self.client.force_login(self.alice)
+        url = reverse("admin:campaigns_campaign_change", args=[self.c_a.id])
+        r = self.client.get(url)
+        self.assertEqual(r.status_code, 200)
+
     def test_domain_dropdown_filtered_for_non_superuser(self):
         from campaigns.admin import CampaignAdmin
         from django.contrib.admin.sites import AdminSite
