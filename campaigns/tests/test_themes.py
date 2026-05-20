@@ -277,3 +277,61 @@ class ThemeAdminPermissionsTests(TestCase):
         self.client.force_login(self.su)
         r = self.client.get(reverse("admin:campaigns_theme_changelist"))
         self.assertEqual(r.status_code, 200)
+
+
+class ThemeRenderTests(TestCase):
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.tmp, ignore_errors=True)
+        # Override THEMES_ROOT and build a tiny custom theme + the default.
+        self._override = override_settings(THEMES_ROOT=self.tmp)
+        self._override.enable()
+        self.addCleanup(self._override.disable)
+
+        # Custom theme
+        self.t = Theme.objects.create(name="Mini", slug="mini-render-test")
+        self.t.directory.mkdir(parents=True)
+        (self.t.directory / "submission_form.html").write_text(
+            "<html>FORM:{{ campaign.name }}</html>"
+        )
+        (self.t.directory / "submission_success.html").write_text(
+            "<html>OK:{{ campaign.name }}</html>"
+        )
+
+        # Default theme directory (used by Campaigns with theme=None)
+        default = Theme.get_default()
+        default.directory.mkdir(parents=True)
+        (default.directory / "submission_form.html").write_text(
+            "<html>DEFAULT FORM:{{ campaign.name }}</html>"
+        )
+        (default.directory / "submission_success.html").write_text(
+            "<html>DEFAULT OK:{{ campaign.name }}</html>"
+        )
+
+        from campaigns.models import Campaign
+        self.c_themed = Campaign.objects.create(
+            name="Themed", slug="themed-render-test",
+            start_date="2026-06-01", end_date="2026-06-30",
+            is_active=True, theme=self.t,
+        )
+        self.c_default = Campaign.objects.create(
+            name="Plain", slug="plain-render-test",
+            start_date="2026-06-01", end_date="2026-06-30",
+            is_active=True,
+        )
+
+    def test_themed_campaign_renders_its_theme(self):
+        r = self.client.get(f"/submit/{self.c_themed.slug}/")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"FORM:Themed", r.content)
+
+    def test_unset_theme_falls_back_to_default(self):
+        r = self.client.get(f"/submit/{self.c_default.slug}/")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"DEFAULT FORM:Plain", r.content)
+
+    def test_broken_theme_directory_404s(self):
+        # Wipe the themed theme's submission_form.html
+        (self.t.directory / "submission_form.html").unlink()
+        r = self.client.get(f"/submit/{self.c_themed.slug}/")
+        self.assertEqual(r.status_code, 404)
