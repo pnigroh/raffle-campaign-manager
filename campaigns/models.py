@@ -37,6 +37,13 @@ class Campaign(models.Model):
         max_length=7, blank=True,
         help_text="Sidebar background color (hex, e.g. #1a2035). Optional. Falls back to a dark default if blank."
     )
+    theme = models.ForeignKey(
+        "Theme",
+        on_delete=models.PROTECT,
+        related_name="campaigns",
+        null=True,
+        blank=True,
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -73,14 +80,6 @@ class Campaign(models.Model):
             return True
         luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
         return luminance > 0.55
-
-    theme = models.ForeignKey(
-        "Theme",
-        on_delete=models.PROTECT,
-        related_name="campaigns",
-        null=True,
-        blank=True,
-    )
 
     managers = models.ManyToManyField(
         User, blank=True, related_name='managed_campaigns',
