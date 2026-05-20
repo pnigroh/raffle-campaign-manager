@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0e6dc2">
+  <title>Próximamente</title>
+
+  <style>
+    @font-face {
+      font-family: 'Andreas';
+      src: url("../fonts/Andreas.ttf") format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      margin: 0; padding: 0;
+      min-height: 100%;
+      font-family: 'Gotham', 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      color: #1a1a1a;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      min-height: 100dvh;
+      background: #0e6dc2;
+      overflow-x: hidden;
+    }
+
+    .stage {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+      min-height: 100dvh;
+      margin: 0 auto;
+      background-image: url("bg_mobile_welcome.png");
+      background-position: center top;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-color: #0e6dc2;
+      padding: clamp(24px, 6vw, 40px) clamp(20px, 5vw, 32px);
+      padding-bottom: max(env(safe-area-inset-bottom, 0px), 32px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (min-width: 768px) {
+      body {
+        background: #0e6dc2 url("bg_desktop.png") center center / cover no-repeat fixed;
+        overflow-x: hidden;
+        padding: 0;
+        display: block;
+      }
+
+      .stage {
+        background: transparent;
+        background-image: none;
+        box-shadow: none;
+        border-radius: 0;
+        max-width: none;
+        min-height: 100dvh;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+      }
+
+      .welcome {
+        width: 100%;
+        max-width: 480px;
+        margin-right: clamp(24px, 6vw, 96px);
+        padding: 24px;
+        flex: 0 1 auto;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .welcome .welcome-spacer { display: none; }
+
+      .brand-logo {
+        display: block !important;
+        position: fixed;
+        top: clamp(24px, 5vh, 80px);
+        left: clamp(24px, 4vw, 96px);
+        margin: 0 !important;
+        width: auto;
+        max-width: min(28vw, 360px);
+        z-index: 50;
+      }
+    }
+
+    .welcome {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .welcome-spacer { flex: 1; }
+
+    .welcome-headline {
+      font-family: 'Andreas', 'Anton', 'Bebas Neue', system-ui, sans-serif;
+      color: #fff;
+      text-align: center;
+      letter-spacing: .04em;
+      font-size: clamp(30px, 8.6vw, 42px);
+      line-height: 1;
+      margin: 2% 0 0;
+      text-shadow: 0 2px 6px rgba(0,0,0,.18);
+    }
+
+    .brand-logo {
+      display: block;
+      width: 100%;
+      max-width: min(72%, 320px);
+      height: auto;
+      margin: 4% auto 0;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,.22));
+    }
+  </style>
+</head>
+<body>
+
+<div class="stage">
+  <img class="brand-logo" src="logo_nube.png"
+       alt="La Nube que te mueve... y te lleva al gol">
+
+  <section class="welcome">
+    <h1 class="welcome-headline">PRONTO PODRÁS GANARTE UNA MOTO</h1>
+    <div class="welcome-spacer"></div>
+  </section>
+</div>
+
+</body>
+</html>
