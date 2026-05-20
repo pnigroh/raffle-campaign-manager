@@ -26,6 +26,8 @@ def _is_safe_path(name):
     """Reject path traversal, absolute paths, and zip-slip."""
     if name.startswith("/") or name.startswith("\\"):
         return False
+    if "\\" in name:
+        return False
     parts = Path(name).parts
     if ".." in parts:
         return False
@@ -103,6 +105,11 @@ def extract_bundle(uploaded_file, theme):
         with zf.open(info) as src, open(target, "wb") as dst:
             shutil.copyfileobj(src, dst)
 
+    backup = dest.with_name(dest.name + ".old")
+    if backup.exists():
+        shutil.rmtree(backup)
     if dest.exists():
-        shutil.rmtree(dest)
+        os.rename(dest, backup)
     os.rename(staging, dest)
+    if backup.exists():
+        shutil.rmtree(backup)
