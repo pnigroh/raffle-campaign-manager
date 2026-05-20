@@ -27,6 +27,8 @@ from campaigns.models import Campaign
 
 
 def _open_campaign(slug="futboleros"):
+    from campaigns.models import Domain
+    domain = Domain.objects.get_or_create(hostname="localhost")[0]
     now = timezone.now()
     return Campaign.objects.create(
         name="Futboleros Test",
@@ -37,6 +39,7 @@ def _open_campaign(slug="futboleros"):
         is_active=True,
         validate_submission_code=False,
         allow_multiple_submissions=False,
+        domain=domain,
     )
 
 
