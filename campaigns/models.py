@@ -1,7 +1,11 @@
+import shutil
+import uuid
+
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 from django.utils.text import slugify
-import uuid
 
 
 class Campaign(models.Model):
@@ -316,6 +320,24 @@ class Theme(models.Model):
         from django.conf import settings as dj_settings
         return Path(dj_settings.THEMES_ROOT) / self.slug
 
+    def save(self, *args, **kwargs):
+        if self.is_default:
+            Theme.objects.filter(is_default=True).exclude(pk=self.pk).update(
+                is_default=False
+            )
+        super().save(*args, **kwargs)
+
     @classmethod
     def get_default(cls):
         return cls.objects.get(is_default=True)
+
+
+@receiver(post_delete, sender=Theme)
+def _remove_theme_directory(sender, instance, **kwargs):
+    """When a Theme row is deleted, remove its on-disk directory.
+
+    Protected by Campaign.theme's on_delete=PROTECT: deletion only fires
+    when no Campaign references the theme.
+    """
+    if instance.directory.exists():
+        shutil.rmtree(instance.directory)

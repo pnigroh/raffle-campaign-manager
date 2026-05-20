@@ -26,11 +26,10 @@ class ThemeModelTests(TestCase):
 
 class ThemeConstraintsTests(TestCase):
     def test_only_one_default_allowed(self):
-        from django.db import IntegrityError, transaction
         # The seed migration already has is_default=True (slug="futboleros").
-        # A second default must be rejected.
-        with transaction.atomic(), self.assertRaises(IntegrityError):
-            Theme.objects.create(name="B", slug="b-constraint", is_default=True)
+        # Creating a second default demotes the previous one, keeping exactly one default.
+        Theme.objects.create(name="B", slug="b-constraint", is_default=True)
+        self.assertEqual(Theme.objects.filter(is_default=True).count(), 1)
 
     def test_default_theme_is_seeded_by_migration(self):
         # The seed migration should have created the Futboleros row.
@@ -90,3 +89,51 @@ class DefaultThemeDirectoryTests(TestCase):
         self.assertTrue(directory.is_dir(), f"{directory} missing")
         self.assertTrue((directory / "submission_form.html").is_file())
         self.assertTrue((directory / "submission_success.html").is_file())
+
+
+import shutil
+import tempfile
+
+from django.db.models.signals import post_delete
+
+
+class ThemeDefaultDemotionTests(TestCase):
+    def test_setting_a_new_default_demotes_the_previous_one(self):
+        old = Theme.get_default()  # Futboleros, seeded
+        new = Theme.objects.create(name="New", slug="new-default", is_default=True)
+        old.refresh_from_db()
+        self.assertFalse(old.is_default)
+        self.assertTrue(new.is_default)
+
+    def test_unsetting_is_default_is_fine(self):
+        t = Theme.objects.create(name="T", slug="t-undefault", is_default=False)
+        # No assertion — just shouldn't raise.
+        t.save()
+
+
+class ThemeDeleteSignalTests(TestCase):
+    def test_deleting_unreferenced_theme_removes_directory(self):
+        # Use a temp THEMES_ROOT so we don't touch the real default theme dir.
+        with tempfile.TemporaryDirectory() as tmp:
+            with override_settings(THEMES_ROOT=tmp):
+                t = Theme.objects.create(name="X", slug="x-delete-test")
+                t.directory.mkdir(parents=True)
+                (t.directory / "submission_form.html").write_text("hi")
+                self.assertTrue(t.directory.is_dir())
+                t.delete()
+                self.assertFalse(
+                    Path(tmp, "x-delete-test").is_dir(),
+                    "directory should have been removed",
+                )
+
+    def test_deleting_theme_with_campaigns_is_blocked(self):
+        from django.db.models import ProtectedError
+        from campaigns.models import Campaign
+        t = Theme.objects.create(name="X", slug="x-protected")
+        Campaign.objects.create(
+            name="C", slug="c-protected",
+            start_date="2026-06-01", end_date="2026-06-30",
+            theme=t,
+        )
+        with self.assertRaises(ProtectedError):
+            t.delete()
