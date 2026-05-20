@@ -57,3 +57,26 @@ class CampaignThemeFKTests(TestCase):
             theme=t,
         )
         self.assertEqual(c.theme, t)
+
+
+from django.template import Context, Template
+
+
+class ThemeStaticTagTests(TestCase):
+    def test_returns_theme_assets_url_with_slug(self):
+        theme = Theme.objects.create(name="X", slug="my-theme")
+        tpl = Template("{% load theme_tags %}{% theme_static 'logo.svg' %}")
+        rendered = tpl.render(Context({"theme": theme}))
+        self.assertEqual(rendered, "/theme-assets/my-theme/logo.svg")
+
+    def test_falls_back_to_default_when_theme_not_in_context(self):
+        # Default theme was seeded by migration 0010 — slug=futboleros.
+        tpl = Template("{% load theme_tags %}{% theme_static 'logo.svg' %}")
+        rendered = tpl.render(Context({}))
+        self.assertEqual(rendered, "/theme-assets/futboleros/logo.svg")
+
+    def test_handles_nested_path(self):
+        theme = Theme.objects.create(name="X", slug="x-nested")
+        tpl = Template("{% load theme_tags %}{% theme_static 'fonts/foo.woff2' %}")
+        rendered = tpl.render(Context({"theme": theme}))
+        self.assertEqual(rendered, "/theme-assets/x-nested/fonts/foo.woff2")
