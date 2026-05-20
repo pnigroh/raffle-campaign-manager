@@ -253,3 +253,27 @@ class ThemeBundleValidationTests(TestCase):
             (theme.directory / "submission_form.html").read_bytes(),
             b"SECOND version",
         )
+
+
+from django.contrib.auth.models import User
+from django.urls import reverse
+
+
+class ThemeAdminPermissionsTests(TestCase):
+    def setUp(self):
+        self.su = User.objects.create_superuser("root", "r@x.test", "x")
+        self.staff = User.objects.create_user(
+            "alice", "a@x.test", "x", is_staff=True
+        )
+
+    def test_staff_cannot_view_theme_changelist(self):
+        self.client.force_login(self.staff)
+        r = self.client.get(reverse("admin:campaigns_theme_changelist"))
+        # has_module_permission=False means the user gets a 403 or is redirected
+        # away from the changelist.
+        self.assertIn(r.status_code, (302, 403, 404))
+
+    def test_superuser_sees_theme_changelist(self):
+        self.client.force_login(self.su)
+        r = self.client.get(reverse("admin:campaigns_theme_changelist"))
+        self.assertEqual(r.status_code, 200)
