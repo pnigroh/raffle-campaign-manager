@@ -49,7 +49,7 @@ def _get_campaign_for_host(request, slug):
 
 
 def submission_form(request, campaign_slug):
-    campaign = get_object_or_404(Campaign, slug=campaign_slug, is_active=True)
+    campaign = _get_campaign_for_host(request, campaign_slug)
     now = timezone.now()
 
     campaign_open = campaign.start_date <= now <= campaign.end_date
@@ -89,7 +89,7 @@ def submission_form(request, campaign_slug):
 
 
 def submission_success(request, campaign_slug):
-    campaign = get_object_or_404(Campaign, slug=campaign_slug)
+    campaign = _get_campaign_for_host(request, campaign_slug)
     return render(request, 'campaigns/submission_success.html', {'campaign': campaign})
 
 
@@ -97,7 +97,7 @@ def submission_form_preview(request, campaign_slug, variant):
     from django.http import Http404
     if variant not in ('a', 'b', 'c'):
         raise Http404("Unknown preview variant")
-    campaign = get_object_or_404(Campaign, slug=campaign_slug)
+    campaign = _get_campaign_for_host(request, campaign_slug)
     form = SubmissionForm(campaign=campaign)
     return render(request, f'campaigns/_proposals/form_{variant}.html', {
         'campaign': campaign,

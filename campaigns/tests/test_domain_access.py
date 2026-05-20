@@ -117,3 +117,25 @@ class GetCampaignForHostTests(TestCase):
         self.c_a.save()
         with self.assertRaises(Http404):
             _get_campaign_for_host(self._req("a.test"), "summer")
+
+
+@override_settings(ALLOWED_HOSTS=["a.test", "b.test", "nope.test", "*"])
+class PublicViewHostGateTests(TestCase):
+    def setUp(self):
+        self.a = Domain.objects.create(hostname="a.test")
+        self.b = Domain.objects.create(hostname="b.test")
+        self.campaign = Campaign.objects.create(
+            **_campaign_kwargs("A-summer", "summer", self.a)
+        )
+
+    def test_submission_form_200_on_correct_host(self):
+        r = self.client.get("/submit/summer/", HTTP_HOST="a.test")
+        self.assertEqual(r.status_code, 200)
+
+    def test_submission_form_404_on_wrong_host(self):
+        r = self.client.get("/submit/summer/", HTTP_HOST="b.test")
+        self.assertEqual(r.status_code, 404)
+
+    def test_submission_success_404_on_wrong_host(self):
+        r = self.client.get("/submit/summer/success/", HTTP_HOST="b.test")
+        self.assertEqual(r.status_code, 404)
