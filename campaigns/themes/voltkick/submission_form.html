@@ -1,0 +1,484 @@
+{% load theme_tags %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0A0E27">
+  <title>{{ campaign.name }} — VoltKick</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Space+Mono:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --void:#05071A;
+      --midnight:#0A0E27;
+      --night:#141A3D;
+      --cyan:#00F0FF;
+      --cyan-soft:rgba(0,240,255,.18);
+      --magenta:#FF006E;
+      --magenta-soft:rgba(255,0,110,.18);
+      --violet:#7B2FFF;
+      --ink:#E8EBFF;
+      --ink-soft:#8A92C5;
+      --glass:rgba(20,26,61,.55);
+      --glass-border:rgba(0,240,255,.18);
+      --display:'Orbitron',sans-serif;
+      --body:'Rajdhani',sans-serif;
+      --mono:'Space Mono',monospace;
+    }
+
+    *,*::before,*::after{box-sizing:border-box}
+
+    html,body{margin:0;padding:0;background:var(--void);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased}
+    body{
+      min-height:100dvh;overflow-x:hidden;
+      background:
+        radial-gradient(ellipse 50% 40% at 20% 10%, var(--magenta-soft), transparent 60%),
+        radial-gradient(ellipse 50% 40% at 85% 80%, var(--cyan-soft), transparent 60%),
+        radial-gradient(ellipse 30% 30% at 50% 50%, rgba(123,47,255,.12), transparent 60%),
+        linear-gradient(180deg, var(--void) 0%, var(--midnight) 50%, var(--void) 100%);
+      background-attachment:fixed;
+    }
+
+    /* === Animated grid floor === */
+    .grid-floor{
+      position:fixed;left:50%;bottom:-20vh;transform:translateX(-50%) perspective(800px) rotateX(60deg);
+      width:200vw;height:80vh;pointer-events:none;z-index:1;opacity:.4;
+      background:
+        linear-gradient(transparent 0, transparent calc(100% - 1px), var(--cyan) calc(100% - 1px)),
+        linear-gradient(90deg, transparent 0, transparent calc(100% - 1px), var(--cyan) calc(100% - 1px));
+      background-size:80px 80px;
+      animation:grid-pan 12s linear infinite;
+      mask-image:radial-gradient(ellipse 60% 80% at 50% 50%, black 30%, transparent 80%);
+      -webkit-mask-image:radial-gradient(ellipse 60% 80% at 50% 50%, black 30%, transparent 80%);
+    }
+    @keyframes grid-pan{from{background-position:0 0,0 0}to{background-position:0 80px,0 0}}
+
+    /* === Floating orbs === */
+    .orb{
+      position:fixed;border-radius:50%;filter:blur(60px);pointer-events:none;z-index:0;
+      animation:drift 18s ease-in-out infinite;
+    }
+    .orb-1{width:380px;height:380px;background:var(--cyan);top:-80px;left:-100px;opacity:.18}
+    .orb-2{width:320px;height:320px;background:var(--magenta);bottom:-80px;right:-80px;opacity:.18;animation-delay:-6s}
+    .orb-3{width:260px;height:260px;background:var(--violet);top:40%;left:60%;opacity:.16;animation-delay:-12s}
+    @keyframes drift{
+      0%,100%{transform:translate(0,0)}
+      33%{transform:translate(60px,-40px)}
+      66%{transform:translate(-40px,60px)}
+    }
+
+    /* === Scanlines === */
+    body::after{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:5;
+      background:repeating-linear-gradient(180deg,transparent 0 2px,rgba(0,240,255,.018) 2px 3px);
+      mix-blend-mode:screen;
+    }
+
+    .stage{position:relative;z-index:10;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:48px 20px}
+
+    /* === Glass card === */
+    .card{
+      width:100%;max-width:640px;background:var(--glass);
+      backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);
+      border:1px solid var(--glass-border);border-radius:6px;
+      box-shadow:
+        0 0 0 1px rgba(0,240,255,.06) inset,
+        0 30px 80px -20px rgba(0,0,0,.6),
+        0 0 40px rgba(0,240,255,.08);
+      padding:48px 44px;position:relative;
+    }
+    .card::before{
+      content:"";position:absolute;inset:-1px;border-radius:6px;pointer-events:none;
+      background:linear-gradient(135deg, rgba(0,240,255,.3), transparent 30%, transparent 70%, rgba(255,0,110,.3));
+      -webkit-mask:linear-gradient(black,black) content-box,linear-gradient(black,black);
+      -webkit-mask-composite:xor;mask-composite:exclude;padding:1px;
+    }
+
+    /* === Header === */
+    .brand{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .brand-mark{
+      width:22px;height:22px;background:var(--cyan);
+      clip-path:polygon(40% 0,100% 0,60% 50%,100% 100%,40% 100%,0 50%);
+      box-shadow:0 0 12px var(--cyan);
+    }
+    .brand-name{font-family:var(--display);font-size:13px;font-weight:900;letter-spacing:.4em;color:var(--ink)}
+    .brand-name span{color:var(--cyan)}
+
+    .eyebrow{
+      font-family:var(--mono);font-size:11px;color:var(--cyan);
+      letter-spacing:.3em;text-transform:uppercase;margin:32px 0 12px;
+      display:flex;align-items:center;gap:10px;
+    }
+    .eyebrow::before{content:"";width:24px;height:1px;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+    h1{
+      font-family:var(--display);font-weight:900;font-size:clamp(32px,5vw,46px);line-height:1;
+      letter-spacing:-.01em;margin:0 0 12px;color:var(--ink);text-transform:uppercase;
+      text-shadow:0 0 30px rgba(0,240,255,.4);
+    }
+    h1 span{color:var(--cyan);text-shadow:0 0 24px var(--cyan)}
+    .lede{
+      font-family:var(--body);font-size:16px;line-height:1.5;color:var(--ink-soft);
+      max-width:480px;margin:0 0 32px;font-weight:500;
+    }
+
+    /* === Stepper (segmented neon bar) === */
+    .stepper{
+      display:flex;gap:6px;margin:32px 0 36px;
+      padding:14px 0;border-top:1px solid var(--glass-border);border-bottom:1px solid var(--glass-border);
+    }
+    .stepper-item{
+      flex:1;font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;
+      color:var(--ink-soft);
+    }
+    .stepper-item .lvl{font-family:var(--display);font-size:14px;font-weight:700;color:var(--ink-soft);letter-spacing:.1em}
+    .stepper-item .lbl{display:block;margin-top:4px;opacity:.7}
+    .stepper-item .seg{
+      height:3px;margin-top:8px;background:rgba(232,235,255,.08);position:relative;overflow:hidden;
+    }
+    .stepper-item .seg::after{
+      content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--cyan),var(--magenta));
+      transform:scaleX(0);transform-origin:left;transition:transform .5s cubic-bezier(.4,0,.2,1);
+      box-shadow:0 0 12px var(--cyan);
+    }
+    .stepper-item.is-active{color:var(--cyan)}
+    .stepper-item.is-active .lvl{color:var(--cyan)}
+    .stepper-item.is-active .seg::after,
+    .stepper-item.is-done .seg::after{transform:scaleX(1)}
+
+    /* === Steps === */
+    .step{display:none;animation:slideIn .4s ease both}
+    .step.is-active{display:block}
+    @keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+
+    .step-title{
+      font-family:var(--display);font-weight:700;font-size:22px;text-transform:uppercase;
+      letter-spacing:.05em;color:var(--ink);margin:0 0 8px;
+    }
+    .step-title span{color:var(--magenta)}
+    .step-hint{
+      font-family:var(--mono);font-size:12px;color:var(--ink-soft);
+      letter-spacing:.05em;margin:0 0 28px;
+    }
+
+    /* === Fields === */
+    .field{margin-bottom:20px;position:relative}
+    .field label{
+      display:block;font-family:var(--mono);font-size:10px;letter-spacing:.2em;
+      text-transform:uppercase;color:var(--cyan);margin-bottom:8px;
+    }
+    .field input,.field select{
+      width:100%;background:rgba(5,7,26,.6);border:1px solid var(--glass-border);
+      color:var(--ink);font-family:var(--body);font-size:16px;font-weight:500;
+      padding:14px 16px;border-radius:2px;outline:none;
+      transition:all .25s ease;-webkit-appearance:none;appearance:none;
+    }
+    .field input::placeholder{color:var(--ink-soft);opacity:.5}
+    .field input:focus,.field select:focus{
+      border-color:var(--cyan);
+      box-shadow:0 0 0 1px var(--cyan), 0 0 20px rgba(0,240,255,.4), inset 0 0 20px rgba(0,240,255,.05);
+      background:rgba(5,7,26,.8);
+    }
+    .field select{
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2300F0FF' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;
+    }
+    .row-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media (max-width:540px){.row-2{grid-template-columns:1fr}}
+
+    /* === Upload === */
+    .upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+    @media (max-width:540px){.upload-grid{grid-template-columns:1fr}}
+    .upload{
+      position:relative;background:rgba(5,7,26,.6);border:1px dashed var(--glass-border);
+      padding:24px 16px;text-align:center;cursor:pointer;border-radius:2px;
+      transition:all .25s ease;
+    }
+    .upload:hover{border-color:var(--cyan);box-shadow:0 0 24px rgba(0,240,255,.2)}
+    .upload input{position:absolute;inset:0;opacity:0;cursor:pointer}
+    .upload-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);display:block;margin-bottom:8px}
+    .upload-hint{font-family:var(--display);font-size:13px;color:var(--ink);margin:0;letter-spacing:.05em;text-transform:uppercase}
+    .upload-name{font-family:var(--mono);font-size:10px;color:var(--magenta);margin-top:6px;display:none}
+    .upload.has-file{border-color:var(--magenta);border-style:solid}
+    .upload.has-file .upload-name{display:block}
+
+    /* === Buttons === */
+    .actions{display:flex;justify-content:space-between;align-items:center;margin-top:36px;gap:16px}
+    .btn{
+      font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:.25em;
+      text-transform:uppercase;padding:14px 24px;background:transparent;
+      border:1px solid var(--glass-border);color:var(--ink);cursor:pointer;
+      transition:all .25s ease;border-radius:2px;display:inline-flex;align-items:center;gap:10px;
+    }
+    .btn:hover{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 20px rgba(0,240,255,.3)}
+    .btn:focus-visible{outline:2px solid var(--magenta);outline-offset:3px}
+    .btn[disabled]{opacity:.3;cursor:not-allowed}
+    .btn-primary{
+      background:linear-gradient(135deg, var(--cyan), var(--violet));
+      color:var(--void);border-color:transparent;font-weight:900;
+      box-shadow:0 0 24px rgba(0,240,255,.4), inset 0 0 20px rgba(255,255,255,.1);
+    }
+    .btn-primary:hover{
+      color:var(--void);transform:translateY(-1px);
+      box-shadow:0 4px 32px rgba(0,240,255,.6),0 0 0 1px var(--cyan);
+    }
+    .btn-ghost{border:none}
+    .btn-ghost:hover{background:rgba(0,240,255,.06)}
+
+    .js-only{display:none}
+    .js .js-only{display:flex}
+    .js .all-steps-noscript{display:none}
+
+    /* === Prizes === */
+    .prizes{margin-top:36px;padding-top:32px;border-top:1px solid var(--glass-border)}
+    .prizes-title{
+      font-family:var(--mono);font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;
+      color:var(--cyan);margin:0 0 20px;
+    }
+    .prize{
+      background:rgba(5,7,26,.4);border:1px solid var(--glass-border);
+      padding:16px 18px;margin-bottom:10px;border-radius:2px;position:relative;
+      display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;
+    }
+    .prize-tier{
+      font-family:var(--display);font-size:11px;font-weight:900;color:var(--magenta);
+      letter-spacing:.2em;text-shadow:0 0 8px rgba(255,0,110,.5);
+    }
+    .prize-name{font-family:var(--display);font-size:14px;font-weight:700;color:var(--ink);margin:0 0 4px;letter-spacing:.02em;text-transform:uppercase}
+    .prize-desc{font-family:var(--body);font-size:13px;color:var(--ink-soft);line-height:1.45;margin:0}
+    .prize-qty{
+      font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:.15em;
+      white-space:nowrap;background:rgba(0,240,255,.08);padding:4px 8px;border-radius:2px;
+      align-self:start;
+    }
+
+    /* === Form errors === */
+    .form-errors{
+      background:rgba(255,0,110,.1);border:1px solid var(--magenta);padding:14px 18px;
+      margin-bottom:24px;border-radius:2px;
+    }
+    .form-errors p{margin:0;color:var(--magenta);font-family:var(--mono);font-size:12px}
+
+    .signoff{
+      margin-top:32px;padding-top:24px;border-top:1px solid var(--glass-border);
+      display:flex;justify-content:space-between;
+      font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+      color:var(--ink-soft);
+    }
+    .signoff span:first-child{color:var(--cyan)}
+  </style>
+</head>
+<body>
+  <script>document.documentElement.classList.add('js')</script>
+
+  <div class="grid-floor" aria-hidden="true"></div>
+  <div class="orb orb-1" aria-hidden="true"></div>
+  <div class="orb orb-2" aria-hidden="true"></div>
+  <div class="orb orb-3" aria-hidden="true"></div>
+
+  <main class="stage">
+    <div class="card">
+      <header class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <p class="brand-name">VOLT<span>·</span>KICK</p>
+      </header>
+
+      <p class="eyebrow">Sweepstakes // Active</p>
+      <h1>POWER UP<br>YOUR <span>SETUP.</span></h1>
+      <p class="lede">Drop a receipt from any participating retailer. Three reward tiers. One global draw on {{ campaign.end_date|date:"M j" }}. No bots. No bullshit.</p>
+
+      {% if form.non_field_errors or form.errors %}
+        <div class="form-errors">
+          {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+          {% for field in form %}
+            {% for error in field.errors %}<p>{{ field.label|default:field.name }}: {{ error }}</p>{% endfor %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form id="entry" method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <ol class="stepper" aria-label="Levels">
+          <li class="stepper-item is-active" data-step-indicator="1">
+            <span class="lvl">LVL 01</span>
+            <span class="lbl">Identify</span>
+            <span class="seg"></span>
+          </li>
+          <li class="stepper-item" data-step-indicator="2">
+            <span class="lvl">LVL 02</span>
+            <span class="lbl">Locate</span>
+            <span class="seg"></span>
+          </li>
+          <li class="stepper-item" data-step-indicator="3">
+            <span class="lvl">LVL 03</span>
+            <span class="lbl">Power Up</span>
+            <span class="seg"></span>
+          </li>
+        </ol>
+
+        <!-- Step 1: Identify -->
+        <fieldset class="step is-active" data-step="1">
+          <h2 class="step-title">LEVEL 01 // <span>IDENTIFY</span></h2>
+          <p class="step-hint">Standard issue. We need a callsign and a comms channel.</p>
+
+          <div class="row-2">
+            <div class="field">
+              <label for="id_first_name">First Name</label>
+              <input type="text" id="id_first_name" name="first_name" autocomplete="given-name" placeholder="Kai" required>
+            </div>
+            <div class="field">
+              <label for="id_last_name">Last Name</label>
+              <input type="text" id="id_last_name" name="last_name" autocomplete="family-name" placeholder="Reyes" required>
+            </div>
+          </div>
+          <div class="row-2">
+            <div class="field">
+              <label for="id_email">Email</label>
+              <input type="email" id="id_email" name="email" autocomplete="email" inputmode="email" placeholder="player@arena.gg" required>
+            </div>
+            <div class="field">
+              <label for="id_phone">Phone</label>
+              <input type="tel" id="id_phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="(555) 000-0000" required>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Step 2: Locate -->
+        <fieldset class="step" data-step="2">
+          <h2 class="step-title">LEVEL 02 // <span>LOCATE</span></h2>
+          <p class="step-hint">Drop your coordinates. We ship globally; this just routes the dispatch.</p>
+
+          <div class="row-2">
+            <div class="field">
+              <label for="id_state">State</label>
+              <select id="id_state" name="state">
+                <option value="">Select state</option>
+                {% for code, label in form.fields.state.choices %}
+                  {% if code %}<option value="{{ code }}">{{ label }}</option>{% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            <div class="field">
+              <label for="id_county">County</label>
+              <input type="text" id="id_county" name="county" placeholder="Optional">
+            </div>
+          </div>
+          <div class="field">
+            <label for="id_store">Retailer</label>
+            <select id="id_store" name="store">
+              <option value="">Where did you score it?</option>
+              {% for choice in form.fields.store.queryset %}
+                <option value="{{ choice.id }}">{{ choice.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </fieldset>
+
+        <!-- Step 3: Power Up -->
+        <fieldset class="step" data-step="3">
+          <h2 class="step-title">LEVEL 03 // <span>POWER UP</span></h2>
+          <p class="step-hint">Upload your receipt. Selfie is optional but doubles your meme potential.</p>
+
+          <div class="upload-grid">
+            <div class="upload" id="up1">
+              <input type="file" id="id_image_1" name="image_1" accept="image/*">
+              <span class="upload-label">[01] Receipt</span>
+              <p class="upload-hint">Drop or browse</p>
+              <p class="upload-name" id="n1"></p>
+            </div>
+            <div class="upload" id="up2">
+              <input type="file" id="id_image_2" name="image_2" accept="image/*">
+              <span class="upload-label">[02] Selfie · optional</span>
+              <p class="upload-hint">Show your loadout</p>
+              <p class="upload-name" id="n2"></p>
+            </div>
+          </div>
+
+          <input type="hidden" name="submission_code_input" value="">
+        </fieldset>
+
+        <noscript class="all-steps-noscript">
+          <p style="font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin:16px 0">
+            // JS disabled — all fields shown above.
+          </p>
+        </noscript>
+
+        <div class="actions js-only">
+          <button type="button" class="btn btn-ghost" id="back" disabled>← BACK</button>
+          <button type="button" class="btn btn-primary" id="next">CONTINUE →</button>
+          <button type="submit" class="btn btn-primary" id="submit" style="display:none">ENTER DRAW ⚡</button>
+        </div>
+
+        <noscript>
+          <div class="actions"><button type="submit" class="btn btn-primary">ENTER DRAW ⚡</button></div>
+        </noscript>
+      </form>
+
+      {% if prizes %}
+      <aside class="prizes">
+        <p class="prizes-title">Reward Tiers</p>
+        {% for prize in prizes %}
+        <div class="prize">
+          <span class="prize-tier">T{{ forloop.counter }}</span>
+          <div>
+            <p class="prize-name">{{ prize.name }}</p>
+            <p class="prize-desc">{{ prize.description }}</p>
+          </div>
+          <span class="prize-qty">× {{ prize.quantity }}</span>
+        </div>
+        {% endfor %}
+      </aside>
+      {% endif %}
+
+      <footer class="signoff">
+        <span>VOLTKICK ⚡ {{ campaign.end_date|date:"Y" }}</span>
+        <span>Draw // {{ campaign.end_date|date:"M j" }}</span>
+      </footer>
+    </div>
+  </main>
+
+  <script>
+    (function(){
+      const steps = document.querySelectorAll('[data-step]');
+      const inds = document.querySelectorAll('[data-step-indicator]');
+      const back = document.getElementById('back');
+      const next = document.getElementById('next');
+      const submit = document.getElementById('submit');
+      let cur = 1, max = steps.length;
+
+      function setStep(n){
+        cur = Math.max(1, Math.min(max, n));
+        steps.forEach(s => s.classList.toggle('is-active', +s.dataset.step === cur));
+        inds.forEach(i => {
+          const idx = +i.dataset.stepIndicator;
+          i.classList.toggle('is-active', idx === cur);
+          i.classList.toggle('is-done', idx < cur);
+        });
+        back.disabled = cur === 1;
+        next.style.display = cur === max ? 'none' : '';
+        submit.style.display = cur === max ? '' : 'none';
+        document.querySelector('.card').scrollIntoView({behavior:'smooth',block:'start'});
+      }
+      next.addEventListener('click', () => setStep(cur+1));
+      back.addEventListener('click', () => setStep(cur-1));
+
+      function wireUpload(boxId, inputId, nameId){
+        const box = document.getElementById(boxId);
+        const inp = document.getElementById(inputId);
+        const nm  = document.getElementById(nameId);
+        inp.addEventListener('change', () => {
+          if(inp.files && inp.files[0]){
+            box.classList.add('has-file');
+            nm.textContent = inp.files[0].name;
+          }
+        });
+      }
+      wireUpload('up1','id_image_1','n1');
+      wireUpload('up2','id_image_2','n2');
+    })();
+  </script>
+</body>
+</html>

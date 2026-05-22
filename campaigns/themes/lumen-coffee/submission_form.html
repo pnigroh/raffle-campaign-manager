@@ -1,0 +1,449 @@
+{% load theme_tags %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#FAF7F2">
+  <title>{{ campaign.name }} — Lumen Coffee</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;1,300&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --ivory:#FAF7F2;
+      --paper:#F0EBE0;
+      --espresso:#2B1810;
+      --espresso-soft:#5C4937;
+      --sage:#6B8E5B;
+      --sage-soft:#A8B89A;
+      --rule:rgba(43,24,16,.18);
+      --serif:'Cormorant Garamond', 'Georgia', serif;
+      --body:'IBM Plex Sans', system-ui, sans-serif;
+      --mono:'IBM Plex Mono', 'JetBrains Mono', monospace;
+    }
+
+    *,*::before,*::after{box-sizing:border-box}
+
+    html,body{margin:0;padding:0;background:var(--ivory);color:var(--espresso);font-family:var(--body);-webkit-font-smoothing:antialiased}
+
+    body{
+      min-height:100dvh;
+      /* Paper texture via layered radial noise */
+      background:
+        radial-gradient(ellipse at top, rgba(107,142,91,.05), transparent 60%),
+        radial-gradient(ellipse at bottom right, rgba(43,24,16,.04), transparent 70%),
+        var(--ivory);
+      background-attachment:fixed;
+    }
+
+    /* Subtle grain overlay */
+    body::before{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:1;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .169 0 0 0 0 .094 0 0 0 0 .063 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity:.6;mix-blend-mode:multiply;
+    }
+
+    .frame{
+      position:relative;z-index:2;
+      max-width:540px;margin:0 auto;
+      padding:48px 28px 80px;
+      min-height:100dvh;
+      display:flex;flex-direction:column;
+    }
+
+    /* === Masthead === */
+    .masthead{
+      display:flex;align-items:center;justify-content:space-between;
+      padding-bottom:18px;border-bottom:1px solid var(--rule);
+      margin-bottom:56px;
+    }
+    .wordmark{
+      font-family:var(--serif);font-weight:500;font-size:22px;letter-spacing:.06em;
+      color:var(--espresso);text-transform:lowercase;
+    }
+    .wordmark em{font-style:italic;color:var(--sage)}
+    .issue{
+      font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
+      color:var(--espresso-soft);
+    }
+
+    /* === Step indicator === */
+    .stepper{display:flex;gap:12px;margin-bottom:36px;font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase}
+    .stepper-item{
+      flex:1;display:flex;flex-direction:column;gap:8px;
+      color:var(--espresso-soft);opacity:.6;transition:opacity .35s ease,color .35s ease;
+    }
+    .stepper-item .num{font-feature-settings:"tnum"}
+    .stepper-item .bar{height:1px;background:var(--rule);position:relative;overflow:hidden}
+    .stepper-item .bar::after{
+      content:"";position:absolute;inset:0;background:var(--sage);
+      transform:scaleX(0);transform-origin:left;transition:transform .5s cubic-bezier(.4,0,.2,1);
+    }
+    .stepper-item.is-active{opacity:1;color:var(--espresso)}
+    .stepper-item.is-active .bar::after,
+    .stepper-item.is-done .bar::after{transform:scaleX(1)}
+    .stepper-item.is-done{opacity:.85;color:var(--sage)}
+
+    /* === Hero === */
+    .eyebrow{
+      font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
+      color:var(--sage);margin-bottom:16px;
+    }
+    .display{
+      font-family:var(--serif);font-weight:300;font-size:clamp(40px,7vw,56px);
+      line-height:1.05;letter-spacing:-.012em;
+      margin:0 0 22px;color:var(--espresso);
+    }
+    .display em{font-style:italic;color:var(--sage)}
+    .lede{
+      font-family:var(--serif);font-style:italic;font-weight:300;
+      font-size:clamp(18px,2.4vw,21px);line-height:1.45;color:var(--espresso-soft);
+      margin:0 0 8px;max-width:480px;
+    }
+
+    /* Ornament: three dots */
+    .ornament{
+      display:flex;justify-content:center;gap:14px;margin:48px 0;
+    }
+    .ornament span{width:5px;height:5px;border-radius:50%;background:var(--sage-soft)}
+    .ornament span:nth-child(2){background:var(--sage)}
+
+    /* === Steps === */
+    form{margin:0}
+    .step{display:none;animation:reveal .5s ease both}
+    .step.is-active{display:block}
+    @keyframes reveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+    .step-title{
+      font-family:var(--serif);font-weight:300;font-size:32px;line-height:1.1;
+      color:var(--espresso);margin:0 0 6px;letter-spacing:-.005em;
+    }
+    .step-title em{font-style:italic;color:var(--sage)}
+    .step-hint{
+      font-family:var(--body);font-size:14px;color:var(--espresso-soft);
+      margin:0 0 36px;line-height:1.55;
+    }
+
+    /* Underline-only field */
+    .field{position:relative;margin-bottom:32px}
+    .field label{
+      display:block;font-family:var(--mono);font-size:10px;letter-spacing:.2em;
+      text-transform:uppercase;color:var(--espresso-soft);margin-bottom:10px;
+    }
+    .field label .req{color:var(--sage);margin-left:4px}
+    .field input,.field select{
+      width:100%;border:none;border-bottom:1px solid var(--rule);
+      background:transparent;font-family:var(--serif);font-size:22px;font-weight:300;
+      color:var(--espresso);padding:8px 0 10px;outline:none;border-radius:0;
+      transition:border-color .25s ease;
+      -webkit-appearance:none;appearance:none;
+    }
+    .field input::placeholder{color:var(--espresso-soft);opacity:.5;font-style:italic}
+    .field input:focus,.field select:focus{border-bottom-color:var(--sage)}
+    .field select{
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8' viewBox='0 0 14 8'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%235C4937' fill='none' stroke-width='1.2'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 0 center;padding-right:24px;
+    }
+    .field.has-error input,.field.has-error select{border-bottom-color:#c0392b}
+    .field .err{display:none;color:#c0392b;font-size:12px;margin-top:6px;font-family:var(--body)}
+    .field.has-error .err{display:block}
+
+    /* Row of two */
+    .row-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    @media (max-width:520px){.row-2{grid-template-columns:1fr}}
+
+    /* Upload */
+    .upload{
+      margin-bottom:32px;border:1px dashed var(--rule);
+      padding:32px 24px;text-align:center;cursor:pointer;
+      transition:border-color .25s ease, background-color .25s ease;
+      position:relative;
+    }
+    .upload:hover,.upload.is-drag{border-color:var(--sage);background:rgba(107,142,91,.04)}
+    .upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+    .upload-label{
+      font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+      color:var(--espresso-soft);display:block;margin-bottom:14px;
+    }
+    .upload-hint{font-family:var(--serif);font-style:italic;font-size:18px;color:var(--espresso);margin:0}
+    .upload-hint em{color:var(--sage);font-style:normal;border-bottom:1px solid var(--sage)}
+    .upload.has-file .upload-hint{color:var(--sage)}
+    .upload-filename{
+      font-family:var(--mono);font-size:11px;color:var(--sage);
+      margin-top:8px;display:none;letter-spacing:.05em;
+    }
+    .upload.has-file .upload-filename{display:block}
+
+    /* Actions */
+    .actions{
+      display:flex;justify-content:space-between;align-items:center;
+      margin-top:48px;padding-top:24px;border-top:1px solid var(--rule);
+    }
+    .btn{
+      font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+      padding:14px 28px;border:1px solid var(--espresso);background:transparent;
+      color:var(--espresso);cursor:pointer;transition:all .3s cubic-bezier(.4,0,.2,1);
+      display:inline-flex;align-items:center;gap:10px;border-radius:0;
+    }
+    .btn:hover{background:var(--espresso);color:var(--ivory)}
+    .btn:focus-visible{outline:2px solid var(--sage);outline-offset:3px}
+    .btn[disabled]{opacity:.4;cursor:not-allowed}
+    .btn .arrow{display:inline-block;transition:transform .3s ease}
+    .btn:hover .arrow{transform:translateX(4px)}
+    .btn-ghost{border:none;color:var(--espresso-soft);padding:14px 0}
+    .btn-ghost:hover{background:transparent;color:var(--espresso)}
+    .btn-primary{background:var(--espresso);color:var(--ivory);border-color:var(--espresso)}
+    .btn-primary:hover{background:var(--sage);border-color:var(--sage)}
+
+    .js-only{display:none}
+    .js .js-only{display:flex}
+    .js .all-steps-noscript{display:none}
+
+    /* Prizes column */
+    .prizes{margin:48px 0 0;padding-top:36px;border-top:1px solid var(--rule)}
+    .prizes-title{
+      font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
+      color:var(--sage);margin:0 0 24px;
+    }
+    .prize{padding:16px 0;border-bottom:1px solid var(--rule);display:flex;gap:16px;align-items:baseline}
+    .prize:last-child{border-bottom:none}
+    .prize-num{
+      font-family:var(--mono);font-size:11px;color:var(--espresso-soft);
+      letter-spacing:.1em;min-width:36px;
+    }
+    .prize-name{font-family:var(--serif);font-size:20px;font-weight:300;color:var(--espresso);margin:0 0 4px}
+    .prize-desc{font-family:var(--body);font-size:13.5px;color:var(--espresso-soft);line-height:1.55;margin:0}
+    .prize-qty{
+      font-family:var(--mono);font-size:10px;color:var(--sage);letter-spacing:.12em;
+      margin-top:6px;text-transform:uppercase;
+    }
+
+    /* Form errors */
+    .form-errors{
+      background:rgba(192,57,43,.06);border-left:2px solid #c0392b;
+      padding:14px 18px;margin-bottom:24px;
+    }
+    .form-errors p{margin:0;color:#922b21;font-size:13px;font-family:var(--body)}
+
+    /* Colophon */
+    .colophon{
+      margin-top:auto;padding-top:48px;
+      display:flex;justify-content:space-between;align-items:baseline;
+      font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+      color:var(--espresso-soft);
+    }
+    .colophon .dots{flex:1;border-bottom:1px dotted var(--rule);margin:0 16px 4px}
+  </style>
+</head>
+<body>
+  <script>document.documentElement.classList.add('js')</script>
+
+  <main class="frame">
+    <header class="masthead">
+      <div class="wordmark">lumen <em>coffee</em></div>
+      <div class="issue">№ 07 · Spring Issue</div>
+    </header>
+
+    <p class="eyebrow">Vol. III — A Reader Giveaway</p>
+    <h1 class="display">A year, <em>brewed</em><br>at your door.</h1>
+    <p class="lede">Drop your receipt from any Lumen location and enter the draw for a twelve-month bean subscription, hand-curated by our roasters.</p>
+
+    <div class="ornament" aria-hidden="true"><span></span><span></span><span></span></div>
+
+    {% if form.non_field_errors or form.errors %}
+      <div class="form-errors">
+        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        {% for field in form %}
+          {% for error in field.errors %}<p>{{ field.label|default:field.name }}: {{ error }}</p>{% endfor %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form id="entry" method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+
+      <!-- Stepper -->
+      <ol class="stepper" aria-label="Progress">
+        <li class="stepper-item is-active" data-step-indicator="1">
+          <span class="num">01 — Hello</span><span class="bar"></span>
+        </li>
+        <li class="stepper-item" data-step-indicator="2">
+          <span class="num">02 — Where</span><span class="bar"></span>
+        </li>
+        <li class="stepper-item" data-step-indicator="3">
+          <span class="num">03 — Receipt</span><span class="bar"></span>
+        </li>
+      </ol>
+
+      <!-- Step 1: Hello -->
+      <fieldset class="step is-active" data-step="1">
+        <h2 class="step-title"><em>Hello.</em> Tell us who you are.</h2>
+        <p class="step-hint">We send tasting notes to the email you provide. We do not share it.</p>
+
+        <div class="row-2">
+          <div class="field">
+            <label for="id_first_name">First name <span class="req">·</span></label>
+            <input type="text" id="id_first_name" name="first_name" placeholder="Frances" autocomplete="given-name" required>
+            <div class="err">Please enter your first name.</div>
+          </div>
+          <div class="field">
+            <label for="id_last_name">Last name <span class="req">·</span></label>
+            <input type="text" id="id_last_name" name="last_name" placeholder="Mallory" autocomplete="family-name" required>
+            <div class="err">Please enter your last name.</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="id_email">Email <span class="req">·</span></label>
+          <input type="email" id="id_email" name="email" placeholder="frances@studio.co" autocomplete="email" inputmode="email" required>
+          <div class="err">Please enter a valid email.</div>
+        </div>
+      </fieldset>
+
+      <!-- Step 2: Where -->
+      <fieldset class="step" data-step="2">
+        <h2 class="step-title">Where are you <em>writing from?</em></h2>
+        <p class="step-hint">For the shipping label, should you be drawn.</p>
+
+        <div class="row-2">
+          <div class="field">
+            <label for="id_state">State</label>
+            <select id="id_state" name="state">
+              <option value="">Select a state</option>
+              {% for code, label in form.fields.state.choices %}
+                {% if code %}<option value="{{ code }}">{{ label }}</option>{% endif %}
+              {% endfor %}
+            </select>
+            <div class="err">Please choose a state.</div>
+          </div>
+          <div class="field">
+            <label for="id_county">County</label>
+            <input type="text" id="id_county" name="county" placeholder="Multnomah">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="id_store">Lumen café</label>
+          <select id="id_store" name="store">
+            <option value="">Where did you pick up your beans?</option>
+            {% for choice in form.fields.store.queryset %}
+              <option value="{{ choice.id }}">{{ choice.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </fieldset>
+
+      <!-- Step 3: Receipt -->
+      <fieldset class="step" data-step="3">
+        <h2 class="step-title">Your <em>receipt.</em> The last piece.</h2>
+        <p class="step-hint">A clear photo of the receipt is enough. JPG or PNG, ten megabytes maximum.</p>
+
+        <div class="field">
+          <label for="id_phone">Phone <span class="req">·</span></label>
+          <input type="tel" id="id_phone" name="phone" placeholder="(503) 555-0102" autocomplete="tel" inputmode="tel" required>
+          <div class="err">Please enter a phone number.</div>
+        </div>
+
+        <div class="upload" id="upload">
+          <input type="file" id="id_image_1" name="image_1" accept="image/*">
+          <label class="upload-label" for="id_image_1">Proof of purchase</label>
+          <p class="upload-hint">Drop a file, or <em>browse</em></p>
+          <p class="upload-filename" id="filename"></p>
+        </div>
+
+        <!-- Hidden fields the form expects but theme doesn't surface -->
+        <input type="hidden" name="image_2" value="">
+        <input type="hidden" name="submission_code_input" value="">
+      </fieldset>
+
+      <noscript class="all-steps-noscript">
+        <p style="font-family:var(--body);font-size:13px;color:var(--espresso-soft);margin:24px 0">
+          (JavaScript is disabled — all fields shown below.)
+        </p>
+      </noscript>
+
+      <div class="actions js-only">
+        <button type="button" class="btn btn-ghost" id="back" disabled>← Back</button>
+        <button type="button" class="btn btn-primary" id="next">Continue <span class="arrow">→</span></button>
+        <button type="submit" class="btn btn-primary" id="submit" style="display:none">Submit Entry <span class="arrow">→</span></button>
+      </div>
+
+      <noscript>
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Submit Entry →</button>
+        </div>
+      </noscript>
+    </form>
+
+    {% if prizes %}
+    <aside class="prizes">
+      <p class="prizes-title">Drawn for</p>
+      {% for prize in prizes %}
+      <div class="prize">
+        <span class="prize-num">{{ forloop.counter|stringformat:"02d" }}</span>
+        <div>
+          <p class="prize-name">{{ prize.name }}</p>
+          <p class="prize-desc">{{ prize.description }}</p>
+          {% if prize.quantity > 1 %}<p class="prize-qty">{{ prize.quantity }} winners</p>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </aside>
+    {% endif %}
+
+    <footer class="colophon">
+      <span>Lumen Coffee</span>
+      <span class="dots"></span>
+      <span>Drawn {{ campaign.end_date|date:"F j, Y" }}</span>
+    </footer>
+  </main>
+
+  <script>
+    (function(){
+      const steps = document.querySelectorAll('[data-step]');
+      const indicators = document.querySelectorAll('[data-step-indicator]');
+      const back = document.getElementById('back');
+      const next = document.getElementById('next');
+      const submit = document.getElementById('submit');
+      let current = 1;
+      const max = steps.length;
+
+      function setStep(n){
+        current = Math.max(1, Math.min(max, n));
+        steps.forEach(s => s.classList.toggle('is-active', Number(s.dataset.step) === current));
+        indicators.forEach(i => {
+          const idx = Number(i.dataset.stepIndicator);
+          i.classList.toggle('is-active', idx === current);
+          i.classList.toggle('is-done', idx < current);
+        });
+        back.disabled = current === 1;
+        next.style.display = current === max ? 'none' : '';
+        submit.style.display = current === max ? '' : 'none';
+        window.scrollTo({top:0,behavior:'smooth'});
+      }
+
+      next.addEventListener('click', () => setStep(current + 1));
+      back.addEventListener('click', () => setStep(current - 1));
+
+      // Upload UI
+      const upload = document.getElementById('upload');
+      const fileInput = document.getElementById('id_image_1');
+      const filename = document.getElementById('filename');
+      fileInput.addEventListener('change', () => {
+        if(fileInput.files && fileInput.files[0]){
+          upload.classList.add('has-file');
+          filename.textContent = fileInput.files[0].name;
+        }
+      });
+      ['dragenter','dragover'].forEach(e => upload.addEventListener(e, ev => {
+        ev.preventDefault(); upload.classList.add('is-drag');
+      }));
+      ['dragleave','drop'].forEach(e => upload.addEventListener(e, ev => {
+        ev.preventDefault(); upload.classList.remove('is-drag');
+      }));
+    })();
+  </script>
+</body>
+</html>

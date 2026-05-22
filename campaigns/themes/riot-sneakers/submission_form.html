@@ -1,0 +1,378 @@
+{% load theme_tags %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#FFEA00">
+  <title>{{ campaign.name }} — RIOT</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Bungee+Inline&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --paper:#FFFEF7;
+      --ink:#0A0A0A;
+      --hazard:#FFEA00;
+      --alert:#FF0844;
+      --concrete:#1f1f1f;
+      --rule:#0A0A0A;
+      --display:'Archivo Black',Impact,sans-serif;
+      --accent:'Bungee Inline','Archivo Black',sans-serif;
+      --mono:'JetBrains Mono',monospace;
+    }
+
+    *,*::before,*::after{box-sizing:border-box;border-radius:0!important}
+
+    html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--mono);-webkit-font-smoothing:antialiased}
+    body{
+      min-height:100dvh;overflow-x:hidden;
+      background:var(--paper);
+      background-image:
+        radial-gradient(circle at 1px 1px, var(--ink) 1px, transparent 1.5px);
+      background-size:14px 14px;
+    }
+
+    /* === Hard top stripe === */
+    .stripe{
+      background:var(--ink);color:var(--hazard);padding:8px 0;
+      font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.3em;
+      text-transform:uppercase;border-bottom:4px solid var(--ink);
+      display:flex;overflow:hidden;white-space:nowrap;
+    }
+    .stripe-track{display:flex;gap:48px;animation:scroll 20s linear infinite;padding-left:48px}
+    @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    .stripe-track span::after{content:" ✘ ";color:var(--alert);margin-left:48px}
+
+    .frame{max-width:880px;margin:0 auto;padding:48px 24px 80px;position:relative}
+
+    /* === Masthead === */
+    .masthead{
+      display:flex;justify-content:space-between;align-items:flex-start;
+      border-bottom:4px solid var(--ink);padding-bottom:20px;margin-bottom:48px;
+    }
+    .wordmark{
+      font-family:var(--display);font-size:48px;line-height:.9;letter-spacing:-.04em;
+      color:var(--ink);text-transform:uppercase;
+    }
+    .wordmark::after{content:"";display:inline-block;width:14px;height:14px;background:var(--alert);margin-left:6px;vertical-align:bottom}
+    .serial{font-family:var(--mono);font-size:11px;text-align:right;font-weight:700;letter-spacing:.1em}
+    .serial b{display:block;font-size:14px;background:var(--ink);color:var(--hazard);padding:3px 8px;margin-top:4px}
+
+    /* === Hero === */
+    .hero{
+      position:relative;border:4px solid var(--ink);background:var(--hazard);
+      padding:36px 32px;margin-bottom:8px;overflow:hidden;
+    }
+    .hero::before{
+      content:"";position:absolute;inset:auto -40px -60px auto;width:240px;height:240px;
+      background:var(--ink);transform:rotate(45deg);
+    }
+    .hero::after{
+      content:"";position:absolute;top:-20px;left:40px;width:80px;height:8px;background:var(--alert);
+    }
+    .drop-label{
+      font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.3em;
+      text-transform:uppercase;margin:0 0 12px;color:var(--ink);
+    }
+    .drop-name{
+      font-family:var(--display);font-size:clamp(56px,11vw,108px);line-height:.85;
+      letter-spacing:-.04em;margin:0 0 12px;color:var(--ink);text-transform:uppercase;
+      position:relative;z-index:1;
+    }
+    .drop-name span{
+      display:inline-block;background:var(--ink);color:var(--hazard);padding:0 14px;
+      transform:rotate(-2deg);margin-left:-4px;
+    }
+    .drop-tag{
+      font-family:var(--accent);font-size:clamp(18px,2.6vw,26px);color:var(--ink);
+      margin:0;text-transform:uppercase;letter-spacing:.04em;position:relative;z-index:1;
+    }
+
+    /* === Stat bar === */
+    .stats{
+      display:grid;grid-template-columns:repeat(3,1fr);border:4px solid var(--ink);
+      border-top:none;background:var(--paper);
+    }
+    .stat{padding:20px 18px;border-right:4px solid var(--ink)}
+    .stat:last-child{border-right:none;background:var(--alert);color:var(--paper)}
+    .stat-num{font-family:var(--display);font-size:clamp(28px,4vw,40px);line-height:1;letter-spacing:-.02em;color:var(--ink);margin:0;text-transform:uppercase}
+    .stat:last-child .stat-num{color:var(--paper)}
+    .stat-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;margin:6px 0 0;color:var(--ink);opacity:.7}
+    .stat:last-child .stat-label{color:var(--paper);opacity:1}
+
+    /* === Section === */
+    section{margin-top:48px}
+    .section-title{
+      font-family:var(--display);font-size:clamp(28px,4vw,42px);line-height:.95;
+      letter-spacing:-.02em;color:var(--ink);text-transform:uppercase;margin:0 0 8px;
+      display:flex;align-items:baseline;gap:14px;
+    }
+    .section-title .num{
+      font-family:var(--mono);font-size:14px;font-weight:700;background:var(--ink);color:var(--hazard);
+      padding:4px 10px;letter-spacing:.1em;align-self:center;
+    }
+    .section-sub{font-family:var(--mono);font-size:12.5px;letter-spacing:.05em;color:var(--ink);margin:0 0 32px;font-weight:500;line-height:1.5}
+
+    /* === Form === */
+    form{margin:0}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:4px solid var(--ink);background:var(--ink)}
+    .grid.cols-1{grid-template-columns:1fr}
+    @media (max-width:680px){.grid{grid-template-columns:1fr}}
+    .field{
+      padding:20px 22px;background:var(--paper);
+      border-right:4px solid var(--ink);border-bottom:4px solid var(--ink);
+    }
+    .field:nth-child(even){border-right:none}
+    .grid.cols-1 .field{border-right:none}
+    .field:last-child{border-bottom:none}
+    @media (max-width:680px){.field{border-right:none}}
+
+    .field label{
+      display:flex;align-items:center;gap:10px;
+      font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.2em;
+      text-transform:uppercase;color:var(--ink);margin-bottom:10px;
+    }
+    .field label::before{
+      content:attr(data-num);font-family:var(--mono);font-weight:700;font-size:11px;
+      background:var(--ink);color:var(--hazard);padding:2px 6px;letter-spacing:.1em;
+    }
+    .field input,.field select{
+      width:100%;border:none;border-bottom:2px solid var(--ink);background:transparent;
+      font-family:var(--display);font-size:24px;color:var(--ink);padding:6px 0;
+      outline:none;-webkit-appearance:none;appearance:none;text-transform:uppercase;
+    }
+    .field input::placeholder{color:var(--ink);opacity:.25;text-transform:uppercase}
+    .field input:focus,.field select:focus{border-bottom-color:var(--alert);background:#fff5f7}
+
+    /* === Upload === */
+    .upload{
+      margin-top:8px;border:4px dashed var(--ink);padding:32px 24px;text-align:center;
+      cursor:pointer;background:var(--paper);position:relative;
+      transition:background .15s ease;
+    }
+    .upload:hover,.upload.is-drag{background:var(--hazard)}
+    .upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+    .upload-icon{
+      display:inline-block;width:60px;height:60px;border:3px solid var(--ink);background:var(--alert);
+      transform:rotate(-3deg);margin-bottom:14px;color:var(--paper);font-family:var(--display);
+      font-size:36px;line-height:54px;text-align:center;
+    }
+    .upload-hint{font-family:var(--display);font-size:18px;color:var(--ink);margin:0;text-transform:uppercase;letter-spacing:.02em}
+    .upload-hint b{background:var(--ink);color:var(--paper);padding:2px 8px}
+    .upload-name{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--alert);margin-top:10px;display:none;text-transform:uppercase}
+    .upload.has-file .upload-name{display:block}
+
+    /* === Submit === */
+    .submit-wrap{margin-top:48px;text-align:center;position:relative}
+    .btn{
+      font-family:var(--display);font-size:24px;letter-spacing:.06em;text-transform:uppercase;
+      padding:24px 56px;background:var(--hazard);color:var(--ink);border:4px solid var(--ink);
+      cursor:pointer;position:relative;transition:transform .15s ease,background .15s ease;
+      box-shadow:8px 8px 0 var(--ink);
+    }
+    .btn:hover{transform:translate(-2px,-2px) rotate(-1deg);background:var(--alert);color:var(--paper);box-shadow:10px 10px 0 var(--ink)}
+    .btn:active{transform:translate(4px,4px);box-shadow:2px 2px 0 var(--ink)}
+    .btn:focus-visible{outline:4px dashed var(--alert);outline-offset:6px}
+
+    /* === Prizes === */
+    .prizes{margin-top:64px;border-top:4px solid var(--ink);padding-top:32px}
+    .prize{
+      border:4px solid var(--ink);padding:20px 22px;margin-bottom:14px;background:var(--paper);
+      display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;
+      position:relative;
+    }
+    .prize:nth-child(odd){background:var(--hazard)}
+    .prize-tag{
+      font-family:var(--display);font-size:18px;background:var(--ink);color:var(--hazard);
+      padding:8px 12px;letter-spacing:.05em;text-transform:uppercase;
+    }
+    .prize:nth-child(odd) .prize-tag{background:var(--alert);color:var(--paper)}
+    .prize-name{font-family:var(--display);font-size:22px;color:var(--ink);margin:0 0 4px;text-transform:uppercase;letter-spacing:-.01em;line-height:1.05}
+    .prize-desc{font-family:var(--mono);font-size:12.5px;color:var(--ink);margin:0;font-weight:500;line-height:1.5}
+    .prize-qty{font-family:var(--display);font-size:32px;color:var(--ink);text-transform:uppercase;letter-spacing:-.02em}
+    @media (max-width:680px){.prize{grid-template-columns:1fr;gap:8px}.prize-qty{text-align:left}}
+
+    /* === Form errors === */
+    .form-errors{
+      border:4px solid var(--alert);background:var(--paper);padding:18px 22px;margin-bottom:32px;
+      box-shadow:6px 6px 0 var(--ink);
+    }
+    .form-errors p{margin:0 0 6px;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--alert)}
+    .form-errors p:first-child::before{content:"✘ ";font-weight:900}
+
+    /* === Footer === */
+    .signoff{
+      margin-top:64px;border-top:4px solid var(--ink);padding-top:20px;
+      display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+      font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);
+    }
+    .signoff .x{font-family:var(--display);color:var(--alert);font-size:18px}
+  </style>
+</head>
+<body>
+  <div class="stripe">
+    <div class="stripe-track">
+      <span>RIOT // DROP 014 // REGISTER NOW</span>
+      <span>RIOT // DROP 014 // REGISTER NOW</span>
+      <span>RIOT // DROP 014 // REGISTER NOW</span>
+      <span>RIOT // DROP 014 // REGISTER NOW</span>
+      <span>RIOT // DROP 014 // REGISTER NOW</span>
+      <span>RIOT // DROP 014 // REGISTER NOW</span>
+    </div>
+  </div>
+
+  <main class="frame">
+    <header class="masthead">
+      <h1 class="wordmark">RIOT</h1>
+      <div class="serial">
+        DROP №014 — {{ campaign.end_date|date:"M j Y" }}<br>
+        <b>STATUS: OPEN</b>
+      </div>
+    </header>
+
+    <div class="hero">
+      <p class="drop-label">[ Limited Release ]</p>
+      <h2 class="drop-name">AIR MAX<br><span>HAZARD</span></h2>
+      <p class="drop-tag">300 PAIRS. NO BOTS. ONE DRAW.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <p class="stat-num">300</p>
+        <p class="stat-label">Pairs</p>
+      </div>
+      <div class="stat">
+        <p class="stat-num">7—13</p>
+        <p class="stat-label">Sizes</p>
+      </div>
+      <div class="stat">
+        <p class="stat-num">{{ campaign.end_date|date:"M j" }}</p>
+        <p class="stat-label">Draw</p>
+      </div>
+    </div>
+
+    <section>
+      <h2 class="section-title"><span class="num">01</span>REGISTER OR LOSE OUT</h2>
+      <p class="section-sub">SIX FIELDS. TWENTY SECONDS. NO RESUBMISSIONS. ✘ NO EMAIL TYPOS — WE DON'T CHASE YOU.</p>
+
+      {% if form.non_field_errors or form.errors %}
+        <div class="form-errors">
+          {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+          {% for field in form %}
+            {% for error in field.errors %}<p>{{ field.label|default:field.name|upper }}: {{ error }}</p>{% endfor %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <div class="grid">
+          <div class="field">
+            <label data-num="01" for="id_first_name">First Name</label>
+            <input type="text" id="id_first_name" name="first_name" placeholder="NAME" autocomplete="given-name" required>
+          </div>
+          <div class="field">
+            <label data-num="02" for="id_last_name">Last Name</label>
+            <input type="text" id="id_last_name" name="last_name" placeholder="SURNAME" autocomplete="family-name" required>
+          </div>
+          <div class="field">
+            <label data-num="03" for="id_email">Email</label>
+            <input type="email" id="id_email" name="email" placeholder="YOU@DOMAIN" autocomplete="email" inputmode="email" required>
+          </div>
+          <div class="field">
+            <label data-num="04" for="id_phone">Phone</label>
+            <input type="tel" id="id_phone" name="phone" placeholder="555-000-0000" autocomplete="tel" inputmode="tel" required>
+          </div>
+          <div class="field">
+            <label data-num="05" for="id_state">State</label>
+            <select id="id_state" name="state">
+              <option value="">—— SELECT</option>
+              {% for code, label in form.fields.state.choices %}
+                {% if code %}<option value="{{ code }}">{{ label|upper }}</option>{% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label data-num="06" for="id_store">Retailer</label>
+            <select id="id_store" name="store">
+              <option value="">—— SELECT</option>
+              {% for choice in form.fields.store.queryset %}
+                <option value="{{ choice.id }}">{{ choice.name|upper }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <input type="hidden" name="county" value="">
+        <input type="hidden" name="submission_code_input" value="">
+
+        <h2 class="section-title" style="margin-top:48px"><span class="num">02</span>PROOF + SELFIE</h2>
+        <p class="section-sub">RECEIPT REQUIRED. SELFIE OPTIONAL. NO RECEIPT = NO PAIRS.</p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="upload" id="up1">
+            <input type="file" id="id_image_1" name="image_1" accept="image/*">
+            <div class="upload-icon" aria-hidden="true">↑</div>
+            <p class="upload-hint">RECEIPT <b>REQUIRED</b></p>
+            <p class="upload-name" id="n1"></p>
+          </div>
+          <div class="upload" id="up2">
+            <input type="file" id="id_image_2" name="image_2" accept="image/*">
+            <div class="upload-icon" aria-hidden="true" style="background:var(--ink);color:var(--hazard)">★</div>
+            <p class="upload-hint">SELFIE <b>BONUS</b></p>
+            <p class="upload-name" id="n2"></p>
+          </div>
+        </div>
+        <style>@media (max-width:680px){.upload + .upload, [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}}</style>
+
+        <div class="submit-wrap">
+          <button type="submit" class="btn">→ ENTER THE DRAW ←</button>
+        </div>
+      </form>
+    </section>
+
+    {% if prizes %}
+    <section class="prizes">
+      <h2 class="section-title"><span class="num">03</span>WHAT YOU GET</h2>
+      {% for prize in prizes %}
+      <div class="prize">
+        <span class="prize-tag">№{{ forloop.counter|stringformat:"02d" }}</span>
+        <div>
+          <p class="prize-name">{{ prize.name }}</p>
+          <p class="prize-desc">{{ prize.description }}</p>
+        </div>
+        <span class="prize-qty">×{{ prize.quantity }}</span>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    <footer class="signoff">
+      <span>RIOT // EST {{ campaign.end_date|date:"Y" }}</span>
+      <span class="x">✘</span>
+      <span>DRAW {{ campaign.end_date|date:"M j" }}</span>
+    </footer>
+  </main>
+
+  <script>
+    function wireUpload(boxId, inputId, nameId){
+      const box = document.getElementById(boxId);
+      const inp = document.getElementById(inputId);
+      const nm  = document.getElementById(nameId);
+      inp.addEventListener('change', () => {
+        if(inp.files && inp.files[0]){
+          box.classList.add('has-file');
+          nm.textContent = inp.files[0].name.toUpperCase();
+        }
+      });
+      ['dragenter','dragover'].forEach(e => box.addEventListener(e, ev => {ev.preventDefault();box.classList.add('is-drag')}));
+      ['dragleave','drop'].forEach(e => box.addEventListener(e, ev => {ev.preventDefault();box.classList.remove('is-drag')}));
+    }
+    wireUpload('up1','id_image_1','n1');
+    wireUpload('up2','id_image_2','n2');
+  </script>
+</body>
+</html>
