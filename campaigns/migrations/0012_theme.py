@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('campaigns', '0008_backfill_legacy_audit_flags'),
+        ('campaigns', '0011_add_domain_perms_to_campaign_managers_group'),
     ]
 
     operations = [

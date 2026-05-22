@@ -18,6 +18,6 @@ def reverse_noop(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("campaigns", "0010_campaign_theme_fk"),
+        ("campaigns", "0013_campaign_theme_fk"),
     ]
     operations = [migrations.RunPython(populate, reverse_noop)]

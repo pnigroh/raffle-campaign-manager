@@ -23,7 +23,7 @@ def reverse_noop(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('campaigns', '0009_theme'),
+        ('campaigns', '0012_theme'),
     ]
 
     operations = [
