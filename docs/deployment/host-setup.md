@@ -10,6 +10,7 @@ procedures, see `restore-playbook.md`. For design rationale, see
 /srv/raffle/
 ├── pg/                  # Postgres PGDATA, owner 999:999, mode 700
 ├── media/               # MEDIA_ROOT (user uploads), bind-mounted into web + media-syncer
+├── themes/              # Theme bundles (extracted .zip archives)
 ├── pgbackrest/          # pgBackRest local repo (repo1), owner 999:999
 ├── staticfiles/         # collected statics, rebuildable
 ├── migration/           # one-shot SQLite dump + the archived pre-migration db.sqlite3
@@ -69,3 +70,19 @@ docker exec raffle-prod python manage.py check
 Any `campaigns.W001` warning means a Domain row references a hostname not in ALLOWED_HOSTS. Fix and restart.
 
 **Note on visibility:** the W001 warning surfaces via `manage.py check` only — it is NOT printed at container startup. Operators must run `manage.py check` explicitly after editing Domain rows or `ALLOWED_HOSTS`.
+
+## Theme asset routing (nginx)
+
+Theme bundles ship images, fonts, and CSS under `/srv/raffle/themes/<slug>/assets/`. Add this `location` block to the app's nginx vhost (above the Django proxy_pass block):
+
+```nginx
+location ~ ^/theme-assets/([^/]+)/(.+)$ {
+    alias /srv/raffle/themes/$1/assets/$2;
+    expires 7d;
+    add_header Cache-Control "public, immutable";
+}
+```
+
+This bypasses Django for asset requests; the app only sees `/submit/<slug>/` and `/dashboard/`.
+
+If you skip this step, theme assets will still serve in dev (Django handles the route), but prod is slower because every asset goes through gunicorn.
