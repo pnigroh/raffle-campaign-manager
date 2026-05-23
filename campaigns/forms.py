@@ -1,6 +1,5 @@
 from django import forms
-from django.utils import timezone
-from .models import Campaign, Prize, Submission, SubmissionCode, Store
+from .models import Campaign, Prize, Store
 
 US_STATES = [
     ('', '-- Select State --'),
@@ -19,76 +18,6 @@ US_STATES = [
     ('WI', 'Wisconsin'), ('WY', 'Wyoming'), ('DC', 'District of Columbia'),
     ('PR', 'Puerto Rico'),
 ]
-
-
-class SubmissionForm(forms.ModelForm):
-    state = forms.ChoiceField(choices=US_STATES, required=False)
-    submission_code_input = forms.CharField(
-        max_length=100, required=False,
-        label="Submission Code",
-        widget=forms.TextInput(attrs={'placeholder': 'Enter your submission code'})
-    )
-    store = forms.ModelChoiceField(
-        queryset=Store.objects.filter(is_active=True),
-        required=False,
-        empty_label="-- Select Store --",
-        label="Store"
-    )
-
-    class Meta:
-        model = Submission
-        fields = ['first_name', 'last_name', 'state', 'county', 'phone', 'email',
-                  'store', 'image_1', 'image_2']
-        widgets = {
-            'first_name': forms.TextInput(attrs={'placeholder': 'First Name'}),
-            'last_name': forms.TextInput(attrs={'placeholder': 'Last Name'}),
-            'county': forms.TextInput(attrs={'placeholder': 'County'}),
-            'phone': forms.TextInput(attrs={'placeholder': 'Phone Number'}),
-            'email': forms.EmailInput(attrs={'placeholder': 'Email Address'}),
-        }
-
-    def __init__(self, *args, campaign=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.campaign = campaign
-        self.fields['county'].required = False
-        if campaign and campaign.validate_submission_code:
-            self.fields['submission_code_input'].required = True
-            self.fields['submission_code_input'].help_text = "A valid submission code is required."
-        else:
-            self.fields['submission_code_input'].help_text = "Optional."
-
-    def clean(self):
-        cleaned_data = super().clean()
-        code_input = cleaned_data.get('submission_code_input')
-        email = cleaned_data.get('email')
-
-        if self.campaign:
-            if self.campaign.validate_submission_code:
-                if not code_input:
-                    self.add_error('submission_code_input', 'This campaign requires a valid submission code.')
-                else:
-                    try:
-                        sc = SubmissionCode.objects.get(
-                            campaign=self.campaign, code=code_input, is_used=False
-                        )
-                        cleaned_data['submission_code_obj'] = sc
-                    except SubmissionCode.DoesNotExist:
-                        self.add_error('submission_code_input', 'Invalid or already used submission code.')
-            else:
-                if code_input:
-                    try:
-                        sc = SubmissionCode.objects.get(
-                            campaign=self.campaign, code=code_input, is_used=False
-                        )
-                        cleaned_data['submission_code_obj'] = sc
-                    except SubmissionCode.DoesNotExist:
-                        self.add_error('submission_code_input', 'Invalid or already used submission code.')
-
-            if not self.campaign.allow_multiple_submissions and email:
-                if Submission.objects.filter(campaign=self.campaign, email=email).exists():
-                    self.add_error('email', 'This email has already been submitted for this campaign.')
-
-        return cleaned_data
 
 
 class RaffleSegmentForm(forms.Form):
