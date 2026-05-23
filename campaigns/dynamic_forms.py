@@ -5,6 +5,10 @@ Public API:
     save_submission(form, campaign) -> Submission
 """
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def _default_schema():
     """Equivalent of today's hardcoded SubmissionForm — 9 fields, legacy labels."""
@@ -191,3 +195,65 @@ def _custom_field(entry):
         )
 
     raise ValueError(f"Unknown custom type: {ftype}")
+
+
+_BUILTIN_PARTIAL = {
+    "first_name": "partials/_text.html",
+    "last_name": "partials/_text.html",
+    "email": "partials/_text.html",
+    "phone": "partials/_text.html",
+    "state": "partials/_select.html",
+    "county": "partials/_text.html",
+    "store": "partials/_select.html",
+    "image_1": "partials/_file.html",
+    "image_2": "partials/_file.html",
+}
+
+_CUSTOM_PARTIAL = {
+    "text": "partials/_text.html",
+    "textarea": "partials/_textarea.html",
+    "select": "partials/_select.html",
+    "checkbox": "partials/_checkbox.html",
+    "file": "partials/_file.html",
+}
+
+
+def build_form_class(campaign):
+    """Return a Form class wired from campaign.form_schema (or default)."""
+    from .schema_validator import validate_form_schema
+
+    schema = campaign.form_schema or _default_schema()
+    if validate_form_schema(schema):
+        logger.error(
+            "Invalid form_schema for campaign %s (%s); falling back to default",
+            campaign.pk, campaign.slug,
+        )
+        schema = _default_schema()
+
+    field_specs = []
+    field_dict = {}
+    for entry in schema["fields"]:
+        if entry["kind"] == "builtin":
+            field = _builtin_field(entry, campaign)
+            partial = _BUILTIN_PARTIAL[entry["key"]]
+        else:
+            field = _custom_field(entry)
+            partial = _CUSTOM_PARTIAL[entry["type"]]
+        key = entry["key"]
+        field_dict[key] = field
+        field_specs.append({
+            "key": key,
+            "label": entry.get("label", key),
+            "kind": entry["kind"],
+            "type": entry.get("type", entry.get("key")),
+            "partial": partial,
+            "required": bool(entry.get("required", False)),
+            "step": entry.get("step"),
+        })
+
+    Meta = type("Meta", (), {"field_specs": field_specs, "campaign": campaign})
+    return type(
+        "DynamicSubmissionForm",
+        (BaseSubmissionForm,),
+        {**field_dict, "Meta": Meta},
+    )

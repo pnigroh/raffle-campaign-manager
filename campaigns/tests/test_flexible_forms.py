@@ -246,3 +246,71 @@ class CustomFieldTests(TestCase):
         self.assertEqual(f.widget.attrs.get("accept"), "image/*")
         # max_size attached for downstream clean
         self.assertEqual(f.max_size_mb, 5)
+
+
+class BuildFormClassTests(TestCase):
+    def setUp(self):
+        self.domain = Domain.objects.create(hostname="x.test")
+        self.camp = Campaign.objects.create(
+            name="C", slug="c", domain=self.domain,
+            start_date=timezone.now(), end_date=timezone.now() + timedelta(days=1),
+        )
+
+    def test_empty_schema_uses_default(self):
+        from campaigns.dynamic_forms import build_form_class
+        FormCls = build_form_class(self.camp)
+        # 9 builtin keys + submission_code_input from BaseSubmissionForm
+        self.assertIn("first_name", FormCls.base_fields)
+        self.assertIn("image_2", FormCls.base_fields)
+        self.assertIn("submission_code_input", FormCls.base_fields)
+
+    def test_custom_schema_picks_only_listed_fields(self):
+        from campaigns.dynamic_forms import build_form_class
+        self.camp.form_schema = {
+            "version": 1,
+            "fields": [
+                {"kind": "builtin", "key": "first_name", "required": True, "label": "F"},
+                {"kind": "builtin", "key": "last_name", "required": True, "label": "L"},
+                {"kind": "builtin", "key": "email", "required": True, "label": "E"},
+                {"kind": "custom", "key": "why", "type": "textarea",
+                 "required": False, "label": "Why"},
+            ],
+        }
+        self.camp.save()
+        FormCls = build_form_class(self.camp)
+        keys = set(FormCls.base_fields.keys())
+        # phone/state/etc absent
+        self.assertNotIn("phone", keys)
+        self.assertNotIn("state", keys)
+        self.assertIn("why", keys)
+
+    def test_field_specs_carry_partial_path(self):
+        from campaigns.dynamic_forms import build_form_class
+        self.camp.form_schema = {
+            "version": 1,
+            "fields": [
+                {"kind": "builtin", "key": "first_name", "required": True, "label": "F"},
+                {"kind": "builtin", "key": "last_name", "required": True, "label": "L"},
+                {"kind": "builtin", "key": "email", "required": True, "label": "E"},
+                {"kind": "custom", "key": "size", "type": "select", "required": True,
+                 "label": "Size", "options": [{"value": "s", "label": "S"},
+                                              {"value": "m", "label": "M"}]},
+            ],
+        }
+        self.camp.save()
+        FormCls = build_form_class(self.camp)
+        specs = FormCls.Meta.field_specs
+        by_key = {s["key"]: s for s in specs}
+        self.assertEqual(by_key["first_name"]["partial"], "partials/_text.html")
+        self.assertEqual(by_key["email"]["partial"], "partials/_text.html")
+        self.assertEqual(by_key["size"]["partial"], "partials/_select.html")
+
+    def test_invalid_schema_falls_back_to_default(self):
+        """If the validator returns errors, build_form_class falls back to default
+        and logs the error rather than 500ing."""
+        from campaigns.dynamic_forms import build_form_class
+        self.camp.form_schema = {"version": "junk"}
+        self.camp.save()
+        FormCls = build_form_class(self.camp)
+        # Default schema → first_name in fields
+        self.assertIn("first_name", FormCls.base_fields)
