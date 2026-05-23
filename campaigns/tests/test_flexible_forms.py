@@ -192,3 +192,57 @@ class BaseSubmissionFormCleanTests(TestCase):
         form = F({"email": "a@b.com"}, campaign=self.camp)
         form.is_valid()
         self.assertIn("email", form.errors)
+
+
+class CustomFieldTests(TestCase):
+    def test_text(self):
+        from campaigns.dynamic_forms import _custom_field
+        from django import forms
+        f = _custom_field({"key": "x", "type": "text", "required": False,
+                           "label": "X", "max_length": 50})
+        self.assertIsInstance(f, forms.CharField)
+        self.assertEqual(f.max_length, 50)
+        self.assertNotIsInstance(f.widget, forms.Textarea)
+
+    def test_text_default_max_length(self):
+        from campaigns.dynamic_forms import _custom_field
+        f = _custom_field({"key": "x", "type": "text", "required": False, "label": "X"})
+        self.assertEqual(f.max_length, 200)
+
+    def test_textarea(self):
+        from campaigns.dynamic_forms import _custom_field
+        from django import forms
+        f = _custom_field({"key": "x", "type": "textarea", "required": True,
+                           "label": "Why"})
+        self.assertIsInstance(f, forms.CharField)
+        self.assertIsInstance(f.widget, forms.Textarea)
+        self.assertEqual(f.max_length, 2000)
+
+    def test_select(self):
+        from campaigns.dynamic_forms import _custom_field
+        from django import forms
+        f = _custom_field({"key": "x", "type": "select", "required": True,
+                           "label": "Size",
+                           "options": [{"value": "s", "label": "S"},
+                                       {"value": "m", "label": "M"}]})
+        self.assertIsInstance(f, forms.ChoiceField)
+        codes = [c for c, _ in f.choices]
+        self.assertEqual(set(codes), {"", "s", "m"})  # empty placeholder + 2 opts
+
+    def test_checkbox(self):
+        from campaigns.dynamic_forms import _custom_field
+        from django import forms
+        f = _custom_field({"key": "x", "type": "checkbox", "required": True, "label": "OK"})
+        self.assertIsInstance(f, forms.BooleanField)
+        self.assertTrue(f.required)
+
+    def test_file_accept_and_size(self):
+        from campaigns.dynamic_forms import _custom_field
+        from django import forms
+        f = _custom_field({"key": "x", "type": "file", "required": False, "label": "F",
+                           "accept": "image/*", "max_size_mb": 5})
+        self.assertIsInstance(f, forms.FileField)
+        # accept lands in the widget attrs
+        self.assertEqual(f.widget.attrs.get("accept"), "image/*")
+        # max_size attached for downstream clean
+        self.assertEqual(f.max_size_mb, 5)

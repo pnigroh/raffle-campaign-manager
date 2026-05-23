@@ -131,3 +131,63 @@ def _builtin_field(entry, campaign):
         return forms.ImageField(required=required, label=label)
 
     raise ValueError(f"Unknown builtin key: {key}")
+
+
+class _FileFieldWithSize(forms.FileField):
+    """FileField that remembers max_size_mb so the form's clean can enforce it."""
+
+    def __init__(self, *args, max_size_mb=10, **kwargs):
+        self.max_size_mb = max_size_mb
+        super().__init__(*args, **kwargs)
+
+    def validate(self, value):
+        super().validate(value)
+        if value and hasattr(value, "size"):
+            if value.size > self.max_size_mb * 1024 * 1024:
+                from django.core.exceptions import ValidationError
+                raise ValidationError(
+                    f"File exceeds the {self.max_size_mb} MB limit."
+                )
+
+
+def _custom_field(entry):
+    key = entry["key"]
+    label = entry.get("label", key.replace("_", " ").title())
+    required = bool(entry.get("required", False))
+    ftype = entry["type"]
+
+    if ftype == "text":
+        return forms.CharField(
+            required=required, label=label,
+            max_length=entry.get("max_length", 200),
+            widget=forms.TextInput(attrs={
+                "placeholder": entry.get("placeholder", ""),
+            }),
+        )
+    if ftype == "textarea":
+        return forms.CharField(
+            required=required, label=label,
+            max_length=entry.get("max_length", 2000),
+            widget=forms.Textarea(attrs={
+                "rows": 4,
+                "placeholder": entry.get("placeholder", ""),
+            }),
+        )
+    if ftype == "select":
+        opts = entry.get("options", [])
+        choices = [("", f"-- Select {label} --")] + [
+            (o["value"], o["label"]) for o in opts
+        ]
+        return forms.ChoiceField(choices=choices, required=required, label=label)
+    if ftype == "checkbox":
+        return forms.BooleanField(required=required, label=label)
+    if ftype == "file":
+        return _FileFieldWithSize(
+            required=required, label=label,
+            max_size_mb=entry.get("max_size_mb", 10),
+            widget=forms.ClearableFileInput(attrs={
+                "accept": entry.get("accept", ""),
+            }),
+        )
+
+    raise ValueError(f"Unknown custom type: {ftype}")
