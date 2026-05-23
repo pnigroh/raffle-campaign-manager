@@ -494,6 +494,63 @@ class TemplateTagTests(TestCase):
         self.assertEqual(out, "|")
 
 
+class AdminSchemaValidationTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth.models import User
+        self.admin = User.objects.create_superuser("admin", "a@a.com", "pw")
+        self.domain = Domain.objects.create(hostname="adm.test")
+        self.camp = Campaign.objects.create(
+            name="C", slug="c", domain=self.domain,
+            start_date=timezone.now(), end_date=timezone.now() + timedelta(days=1),
+        )
+
+    def test_admin_form_clean_raises_for_invalid_schema(self):
+        """Unit-test the admin form's clean_form_schema method directly.
+
+        Going through a live admin POST is brittle because CampaignAdmin has
+        many required form fields; the cleaner check is to instantiate the
+        admin form and inspect form.errors after is_valid().
+        """
+        from campaigns.admin import CampaignAdmin
+        from django.contrib.admin.sites import AdminSite
+
+        ma = CampaignAdmin(Campaign, AdminSite())
+        FormCls = ma.get_form(request=None)
+        form = FormCls(instance=self.camp, data={
+            "name": "C", "slug": "c", "domain": self.domain.pk,
+            "start_date_0": self.camp.start_date.date().isoformat(),
+            "start_date_1": self.camp.start_date.time().isoformat(),
+            "end_date_0":   self.camp.end_date.date().isoformat(),
+            "end_date_1":   self.camp.end_date.time().isoformat(),
+            "form_schema": '{"version":1,"fields":[{"kind":"custom","key":"Bad-Key!","type":"text","required":false,"label":"x"}]}',
+            "primary_color": "#000000",
+            "sidebar_color": "#000000",
+        })
+        form.is_valid()
+        self.assertIn("form_schema", form.errors)
+        self.assertIn("key must match", str(form.errors["form_schema"]))
+
+    def test_admin_form_accepts_valid_schema(self):
+        """A valid schema should not produce form errors on form_schema."""
+        from campaigns.admin import CampaignAdmin
+        from django.contrib.admin.sites import AdminSite
+
+        ma = CampaignAdmin(Campaign, AdminSite())
+        FormCls = ma.get_form(request=None)
+        form = FormCls(instance=self.camp, data={
+            "name": "C", "slug": "c", "domain": self.domain.pk,
+            "start_date_0": self.camp.start_date.date().isoformat(),
+            "start_date_1": self.camp.start_date.time().isoformat(),
+            "end_date_0":   self.camp.end_date.date().isoformat(),
+            "end_date_1":   self.camp.end_date.time().isoformat(),
+            "form_schema": '{"version":1,"fields":[{"kind":"builtin","key":"first_name","required":true,"label":"F"},{"kind":"builtin","key":"last_name","required":true,"label":"L"},{"kind":"builtin","key":"email","required":true,"label":"E"}]}',
+            "primary_color": "#000000",
+            "sidebar_color": "#000000",
+        })
+        form.is_valid()
+        self.assertNotIn("form_schema", form.errors)
+
+
 class ThemePartialTests(TestCase):
     """Verify {% theme_partial %} chooses the theme's partial when present,
     falls back to _fallback_partials otherwise."""
