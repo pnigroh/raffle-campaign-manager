@@ -492,3 +492,72 @@ class TemplateTagTests(TestCase):
         tpl = Template('{% load dynamic_form_tags %}{{ form|getfield:"nope" }}|')
         out = tpl.render(Context({"form": form}))
         self.assertEqual(out, "|")
+
+
+class ThemePartialTests(TestCase):
+    """Verify {% theme_partial %} chooses the theme's partial when present,
+    falls back to _fallback_partials otherwise."""
+
+    def setUp(self):
+        from campaigns.models import Theme
+        # Force-create a Theme row tied to the in-repo futboleros directory.
+        self.theme = Theme.get_default()
+        domain = Domain.objects.create(hostname="z.test")
+        self.camp = Campaign.objects.create(
+            name="C", slug="c", domain=domain, theme=self.theme,
+            start_date=timezone.now(), end_date=timezone.now() + timedelta(days=1),
+        )
+
+    def _render(self, source, **context):
+        from django.template import Context, Template
+        from campaigns.dynamic_forms import build_form_class
+
+        FormCls = build_form_class(self.camp)
+        form = FormCls(campaign=self.camp)
+        ctx = {"form": form, "form_fields": FormCls.Meta.field_specs,
+               "theme": self.theme, "campaign": self.camp}
+        ctx.update(context)
+        return Template(source).render(Context(ctx))
+
+    def test_theme_partial_uses_fallback_when_theme_lacks_it(self):
+        # futboleros theme has no partials/ yet → all renders use fallback.
+        out = self._render(
+            '{% load dynamic_form_tags %}'
+            '{% for spec in form_fields %}'
+            '{% theme_partial spec=spec %}'
+            '{% endfor %}'
+        )
+        # First field is first_name → fallback _text partial → look for ff-field class
+        self.assertIn("ff-field--text", out)
+        self.assertIn('name="first_name"', out)
+
+    def test_theme_partial_prefers_theme_partial_if_present(self):
+        import pathlib
+
+        # Inject a sentinel partial under campaigns/themes/futboleros/partials/_text.html
+        theme_dir = pathlib.Path(self.theme.directory)
+        partials_dir = theme_dir / "partials"
+        partials_dir.mkdir(exist_ok=True)
+        target = partials_dir / "_text.html"
+        target.write_text(
+            '<div class="theme-text">{{ field }}</div>',
+            encoding="utf-8",
+        )
+        try:
+            out = self._render(
+                '{% load dynamic_form_tags %}'
+                '{% for spec in form_fields %}'
+                '{% if spec.key == "first_name" %}'
+                '{% theme_partial spec=spec %}'
+                '{% endif %}'
+                '{% endfor %}'
+            )
+            self.assertIn("theme-text", out)
+            self.assertNotIn("ff-field--text", out)
+        finally:
+            target.unlink()
+            # Best-effort cleanup if no other files were dropped in
+            try:
+                partials_dir.rmdir()
+            except OSError:
+                pass
