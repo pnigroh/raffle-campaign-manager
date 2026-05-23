@@ -251,6 +251,7 @@
           <th>{% trans "Correo" %}</th>
           <th>{% trans "Teléfono" %}</th>
           <th>{% trans "Foto" %}</th>
+          <th>{% trans "Datos personalizados" %}</th>
           <th>{% trans "Validez" %}</th>
           <th>{% trans "Estado" %}</th>
           <th>{% trans "Código" %}</th>
@@ -273,6 +274,23 @@
             {% else %}
               <span class="text-muted-sm">—</span>
             {% endif %}
+          </td>
+          <td class="custom-data">
+            {% if sub.extra_data %}
+              <ul class="extra-data-list" style="margin:0; padding-left:1em; font-size:0.85em;">
+                {% for k, v in sub.extra_data.items %}
+                  <li><strong>{{ k }}:</strong> {{ v }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+            {% for att in sub.attachments.all %}
+              <a href="{{ att.file.url }}" target="_blank" rel="noopener"
+                 title="{{ att.schema_key }}">
+                <img src="{{ att.file.url }}" alt="{{ att.schema_key }}"
+                     style="height:28px; width:28px; object-fit:cover; border-radius:4px;
+                            border:1px solid #e2e8f0; margin-top:4px;">
+              </a>
+            {% endfor %}
           </td>
           <td>
             {% if sub.is_valid %}
@@ -334,7 +352,7 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="10" class="text-center py-5 text-muted">
+          <td colspan="11" class="text-center py-5 text-muted">
             <i class="bi bi-inbox fs-1 d-block mb-2 opacity-25"></i>
             {% if state_filter or county_filter or search %}
               {% trans "No se encontraron participaciones con los filtros aplicados." %}

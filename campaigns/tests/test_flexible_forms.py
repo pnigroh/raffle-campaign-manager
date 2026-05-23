@@ -645,3 +645,27 @@ class AdminResetActionTests(TestCase):
         }, follow=True)
         self.camp.refresh_from_db()
         self.assertEqual(self.camp.form_schema, {})
+
+
+class DashboardDetailTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth.models import User
+        self.user = User.objects.create_superuser("d", "d@x.com", "pw")
+        self.domain = Domain.objects.create(hostname="dash.test")
+        self.camp = Campaign.objects.create(
+            name="C", slug="c", domain=self.domain,
+            start_date=timezone.now(), end_date=timezone.now() + timedelta(days=1),
+        )
+        Submission.objects.create(
+            campaign=self.camp,
+            first_name="X", last_name="Y", email="x@y.com",
+            extra_data={"why": "I love it", "size": "m"},
+        )
+
+    def test_extra_data_appears_in_detail(self):
+        from django.test import Client
+        client = Client(HTTP_HOST="dash.test")
+        client.force_login(self.user)
+        resp = client.get(f"/dashboard/campaign/{self.camp.pk}/")
+        self.assertContains(resp, "I love it")
+        self.assertContains(resp, "size")
