@@ -1,11 +1,15 @@
+import json
 from django import forms
 from django.contrib import admin, messages
 from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import models as db_models
 from django.utils import timezone
 from django.utils.html import format_html
 from django.urls import reverse
 from unfold.admin import ModelAdmin, TabularInline
 from .models import Campaign, Domain, Prize, SubmissionCode, Submission, Raffle, RaffleWinner, Store, Theme
+from .schema_validator import validate_form_schema
 
 
 def _user_managed_campaign_ids(request):
@@ -122,8 +126,19 @@ class CampaignAdmin(ModelAdmin):
             'description': "Customize how this campaign looks in the dashboard. Leave blank to use defaults.",
             'fields': ('display_title', 'logo', 'logo_preview', 'primary_color', 'sidebar_color', 'palette_preview'),
         }),
+        ('Form configuration', {
+            'description': "Paste valid JSON to customise the submission form fields. Leave empty to use the default 9-field layout.",
+            'fields': ('form_schema',),
+        }),
     )
     readonly_fields = ['logo_preview', 'palette_preview']
+
+    actions = ("reset_form_schema",)
+
+    @admin.action(description="Reset form schema to default (9-field form)")
+    def reset_form_schema(self, request, queryset):
+        n = queryset.update(form_schema={})
+        self.message_user(request, f"Reset {n} campaign(s) to the default form schema.")
 
     view_on_site = True
 
@@ -136,7 +151,7 @@ class CampaignAdmin(ModelAdmin):
         return Campaign.objects.visible_to(request.user)
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "domain":
+        if db_field.name == "domain" and request is not None:
             kwargs["queryset"] = Domain.objects.visible_to(request.user)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -172,11 +187,20 @@ class CampaignAdmin(ModelAdmin):
         # Managers can't delete the campaign itself, only manage its data
         return False
 
+    formfield_overrides = {
+        db_models.JSONField: {
+            "widget": forms.Textarea(attrs={
+                "rows": 12,
+                "style": "font-family: monospace; width: 100%;",
+            }),
+        },
+    }
+
     def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
+        FormCls = super().get_form(request, obj, **kwargs)
         for field_name in ('primary_color', 'sidebar_color'):
-            if field_name in form.base_fields:
-                f = form.base_fields[field_name]
+            if field_name in FormCls.base_fields:
+                f = FormCls.base_fields[field_name]
                 f.widget = HexColorInput(attrs={
                     'style': 'width:60px; height:38px; padding:2px; border-radius:8px;',
                 })
@@ -185,7 +209,24 @@ class CampaignAdmin(ModelAdmin):
                 # — strip empty submissions so the model stays unset.
                 if not f.required:
                     f.required = False
-        return form
+
+        class FormWithSchemaValidation(FormCls):
+            def clean_form_schema(self):
+                value = self.cleaned_data.get("form_schema")
+                # Django coerces JSONField input to Python. If a string sneaks
+                # in (e.g. via a textarea widget), parse defensively.
+                if isinstance(value, str):
+                    try:
+                        value = json.loads(value) if value.strip() else {}
+                    except json.JSONDecodeError as exc:
+                        raise DjangoValidationError(f"Invalid JSON: {exc}")
+                errors = validate_form_schema(value or {})
+                if errors:
+                    msgs = [f"{e['path']}: {e['message']}" for e in errors]
+                    raise DjangoValidationError(msgs)
+                return value
+
+        return FormWithSchemaValidation
 
     def submission_count(self, obj):
         return obj.submissions.count()
@@ -252,6 +293,7 @@ class StoreAdmin(ModelAdmin):
     list_filter = ['is_active']
     search_fields = ['name']
     ordering = ['order', 'name']
+    filter_horizontal = ('campaigns',)
 
     def submission_count(self, obj):
         return obj.submissions.count()
