@@ -268,3 +268,29 @@ class TriviaQuestionThemeRenderingTests(TestCase):
         body = self._get().content.decode()
         self.assertIn("logo_nube.png", body)
         self.assertIn('class="brand-logo"', body)
+
+
+class FutbolerosSeedTests(TestCase):
+    """Smoke: the data migration seeded 10 questions on both Futboleros campaigns.
+
+    The migration is allowed to be a no-op if the Futboleros campaigns aren't
+    present (e.g., a fresh dev DB before seed_demo_proposals runs). If they
+    are present, these assertions hold.
+    """
+
+    def test_both_campaigns_have_ten_active_questions(self):
+        for slug in ("futboleros-bn-hn", "futboleros-bn-gt"):
+            try:
+                c = Campaign.objects.get(slug=slug)
+            except Campaign.DoesNotExist:
+                self.skipTest(f"Campaign {slug} not present in this DB")
+            count = c.trivia_questions.filter(is_active=True).count()
+            self.assertEqual(count, 10, f"{slug} has {count} trivia questions")
+
+    def test_every_seeded_question_has_image(self):
+        try:
+            hn = Campaign.objects.get(slug="futboleros-bn-hn")
+        except Campaign.DoesNotExist:
+            self.skipTest("futboleros-bn-hn not present")
+        for q in hn.trivia_questions.all():
+            self.assertTrue(q.image and q.image.name, f"{q} has no image")
