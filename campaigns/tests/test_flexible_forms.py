@@ -1,7 +1,11 @@
+import shutil
+import tempfile
 from datetime import timedelta
+from pathlib import Path
+
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from campaigns.models import Campaign, Domain, Store, Submission, SubmissionAttachment
@@ -553,12 +557,23 @@ class AdminSchemaValidationTests(TestCase):
 
 class ThemePartialTests(TestCase):
     """Verify {% theme_partial %} chooses the theme's partial when present,
-    falls back to _fallback_partials otherwise."""
+    falls back to _fallback_partials otherwise.
+
+    Runs against an isolated THEMES_ROOT so it never mutates the shared
+    on-disk theme mirror (which other tests render from).
+    """
 
     def setUp(self):
         from campaigns.models import Theme
-        # Force-create a Theme row tied to the in-repo futboleros directory.
-        self.theme = Theme.get_default()
+        self.tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.tmp, ignore_errors=True)
+        self._override = override_settings(THEMES_ROOT=self.tmp)
+        self._override.enable()
+        self.addCleanup(self._override.disable)
+
+        # A throwaway theme whose directory lives under the isolated root.
+        self.theme = Theme.objects.create(name="PartialTest", slug="partial-test")
+        Path(self.theme.directory).mkdir(parents=True, exist_ok=True)
         domain = Domain.objects.create(hostname="z.test")
         self.camp = Campaign.objects.create(
             name="C", slug="c", domain=domain, theme=self.theme,
@@ -577,7 +592,7 @@ class ThemePartialTests(TestCase):
         return Template(source).render(Context(ctx))
 
     def test_theme_partial_uses_fallback_when_theme_lacks_it(self):
-        # futboleros theme has no partials/ yet → all renders use fallback.
+        # The throwaway theme has no partials/ dir → renders use the fallback.
         out = self._render(
             '{% load dynamic_form_tags %}'
             '{% for spec in form_fields %}'
@@ -589,35 +604,23 @@ class ThemePartialTests(TestCase):
         self.assertIn('name="first_name"', out)
 
     def test_theme_partial_prefers_theme_partial_if_present(self):
-        import pathlib
-
-        # Inject a sentinel partial under campaigns/themes/futboleros/partials/_text.html
-        theme_dir = pathlib.Path(self.theme.directory)
-        partials_dir = theme_dir / "partials"
-        partials_dir.mkdir(exist_ok=True)
-        target = partials_dir / "_text.html"
-        target.write_text(
+        # Inject a sentinel partial into the isolated theme dir.
+        partials_dir = Path(self.theme.directory) / "partials"
+        partials_dir.mkdir(parents=True, exist_ok=True)
+        (partials_dir / "_text.html").write_text(
             '<div class="theme-text">{{ field }}</div>',
             encoding="utf-8",
         )
-        try:
-            out = self._render(
-                '{% load dynamic_form_tags %}'
-                '{% for spec in form_fields %}'
-                '{% if spec.key == "first_name" %}'
-                '{% theme_partial spec=spec %}'
-                '{% endif %}'
-                '{% endfor %}'
-            )
-            self.assertIn("theme-text", out)
-            self.assertNotIn("ff-field--text", out)
-        finally:
-            target.unlink()
-            # Best-effort cleanup if no other files were dropped in
-            try:
-                partials_dir.rmdir()
-            except OSError:
-                pass
+        out = self._render(
+            '{% load dynamic_form_tags %}'
+            '{% for spec in form_fields %}'
+            '{% if spec.key == "first_name" %}'
+            '{% theme_partial spec=spec %}'
+            '{% endif %}'
+            '{% endfor %}'
+        )
+        self.assertIn("theme-text", out)
+        self.assertNotIn("ff-field--text", out)
 
 
 class AdminResetActionTests(TestCase):

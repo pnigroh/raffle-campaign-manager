@@ -128,7 +128,7 @@ def _builtin_field(entry, campaign):
         return forms.ModelChoiceField(
             queryset=Store.objects.filter(campaigns=campaign, is_active=True),
             required=required,
-            empty_label=f"-- Select {label} --",
+            empty_label=entry.get("placeholder") or f"-- Select {label} --",
             label=label,
         )
     if key in ("image_1", "image_2"):

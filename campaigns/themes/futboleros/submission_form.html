@@ -667,10 +667,11 @@
           {% theme_partial spec=spec %}
         {% endfor %}
 
-        {% if form.submission_code_input %}
-          <div class="ff-field ff-field--code">
-            {{ form.submission_code_input.label_tag }}
+        {% if campaign.validate_submission_code %}
+          <div class="field">
+            <label for="{{ form.submission_code_input.id_for_label }}">{{ form.submission_code_input.label }}</label>
             {{ form.submission_code_input }}
+            <span class="err" data-err-for="submission_code_input">{{ form.submission_code_input.errors|join:" " }}</span>
           </div>
         {% endif %}
 
@@ -781,28 +782,24 @@
       const submitBtn = document.getElementById('submitBtn');
       const errorBox = document.getElementById('formErrors');
 
-      // File preview (only active when the bespoke upload widget is present;
-      // the dynamic loop's fallback _file.html partial omits those IDs, so
-      // these elements will be null and the block is safely skipped).
-      const fileInput = document.getElementById('id_image_1');
-      const drop = document.getElementById('uploadDrop');
-      const icon = document.getElementById('uploadIcon');
-      const thumb = document.getElementById('uploadThumb');
-      const fname = document.getElementById('uploadFilename');
-
-      if (fileInput && drop && icon && thumb && fname) {
+      // File preview: wire every dropzone (data-upload-drop) generically, so
+      // it works for one or many file fields without hardcoded element IDs.
+      form.querySelectorAll('[data-upload-drop]').forEach(drop => {
+        const fileInput = drop.querySelector('input[type="file"]');
+        const icon = drop.querySelector('[data-upload-icon]');
+        const thumb = drop.querySelector('[data-upload-thumb]');
+        const fname = drop.querySelector('[data-upload-filename]');
+        if (!fileInput) return;
         fileInput.addEventListener('change', () => {
           const file = fileInput.files && fileInput.files[0];
           if (!file) return;
           drop.classList.add('has-file');
-          icon.hidden = true;
-          thumb.hidden = false;
-          thumb.src = URL.createObjectURL(file);
-          fname.hidden = false;
-          fname.textContent = file.name;
-          clearFieldError('image_1');
+          if (icon) icon.hidden = true;
+          if (thumb) { thumb.hidden = false; thumb.src = URL.createObjectURL(file); }
+          if (fname) { fname.hidden = false; fname.textContent = file.name; }
+          clearFieldError(fileInput.name);
         });
-      }
+      });
 
       function clearFieldError(name) {
         const f = form.querySelector(`[data-err-for="${name}"]`);

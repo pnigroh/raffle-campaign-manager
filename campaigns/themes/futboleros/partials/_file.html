@@ -1,0 +1,15 @@
+<div class="upload field{% if field.errors %} has-error{% endif %}">
+  <label class="upload-label" for="{{ field.id_for_label }}">{{ spec.label }}{% if spec.required %} *{% endif %}</label>
+  <div class="upload-drop" data-upload-drop>
+    <div class="upload-icon" data-upload-icon aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 16V4m0 0L7 9m5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <img class="upload-thumb" data-upload-thumb alt="" hidden>
+    <div class="upload-filename" data-upload-filename hidden></div>
+    {{ field }}
+  </div>
+  <span class="err" data-err-for="{{ spec.key }}">{{ field.errors|join:" " }}</span>
+</div>
