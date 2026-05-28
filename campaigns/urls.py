@@ -3,19 +3,20 @@ from django.contrib.auth import views as auth_views
 from django.views.generic.base import RedirectView
 from . import views
 
+_GT_SUBMIT = reverse_lazy('submission_form', kwargs={'campaign_slug': 'futboleros-bn-gt'})
+_HN_SUBMIT = reverse_lazy('submission_form', kwargs={'campaign_slug': 'futboleros-bn-hn'})
+
 urlpatterns = [
     # Public
     path('submit/<slug:campaign_slug>/', views.submission_form, name='submission_form'),
     path('submit/<slug:campaign_slug>/success/', views.submission_success, name='submission_success'),
     path('submit/<slug:campaign_slug>/preview/<str:variant>/', views.submission_form_preview, name='submission_form_preview'),
 
-    # Short links (QR / sharing): /g -> Guatemala, /h -> Honduras.
-    path('g', RedirectView.as_view(
-        url=reverse_lazy('submission_form', kwargs={'campaign_slug': 'futboleros-bn-gt'})),
-        name='shortlink_gt'),
-    path('h', RedirectView.as_view(
-        url=reverse_lazy('submission_form', kwargs={'campaign_slug': 'futboleros-bn-hn'})),
-        name='shortlink_hn'),
+    # Short links (QR / sharing): /g[/] -> Guatemala, /h[/] -> Honduras.
+    path('g', RedirectView.as_view(url=_GT_SUBMIT), name='shortlink_gt'),
+    path('g/', RedirectView.as_view(url=_GT_SUBMIT)),
+    path('h', RedirectView.as_view(url=_HN_SUBMIT), name='shortlink_hn'),
+    path('h/', RedirectView.as_view(url=_HN_SUBMIT)),
 
     # Auth
     path('dashboard/login/', auth_views.LoginView.as_view(

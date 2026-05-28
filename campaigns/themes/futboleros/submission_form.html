@@ -155,12 +155,13 @@
       .welcome .welcome-spacer { display: none; }
 
       /* Desktop: brand-logo (the "La Nube..." titular) lives at top-LEFT on every
-         step. position: fixed bypasses ancestor positioning chain. !important
+         step. position: absolute (anchored to the position:relative .stage) so it
+         scrolls with the page instead of pinning over scrolled content. !important
          overrides the mobile hide rules for form/trivia. */
       .brand-logo,
       .stage[data-step="form"] .brand-logo {
         display: block !important;
-        position: fixed;
+        position: absolute;
         top: clamp(24px, 5vh, 80px);
         left: clamp(24px, 4vw, 96px);
         margin: 0 !important;
@@ -171,7 +172,7 @@
       {% if trivia_question %}
       .stage[data-step="trivia"] .brand-logo {
         display: block !important;
-        position: fixed;
+        position: absolute;
         top: clamp(24px, 5vh, 80px);
         left: clamp(24px, 4vw, 96px);
         margin: 0 !important;
@@ -185,7 +186,7 @@
          matching the AI source's upper-right brand mark on slides 30-37.
          (~50% larger than the previous 180px / 14vw.) */
       .nube-blanca-logo {
-        position: fixed;
+        position: absolute;
         top: clamp(20px, 4vh, 60px);
         right: clamp(20px, 3vw, 72px);
         width: auto;
