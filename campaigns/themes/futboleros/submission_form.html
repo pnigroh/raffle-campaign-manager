@@ -130,6 +130,23 @@
         flex: 0 1 auto;
       }
 
+      /* Keep the form/trivia card clear of the enlarged top-right logo so the
+         heading pills don't sit underneath it. */
+      .stage[data-step="form"] {
+        align-items: flex-start;
+      }
+      .stage[data-step="form"] .step {
+        margin-top: clamp(210px, 30vh, 300px);
+      }
+      {% if trivia_question %}
+      .stage[data-step="trivia"] {
+        align-items: flex-start;
+      }
+      .stage[data-step="trivia"] .step {
+        margin-top: clamp(210px, 30vh, 300px);
+      }
+      {% endif %}
+
       .welcome {
         align-items: center;
         justify-content: center;
