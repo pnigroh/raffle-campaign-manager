@@ -412,3 +412,28 @@ class SubmissionAttachment(models.Model):
 
     def __str__(self):
         return f"{self.submission_id}:{self.schema_key}"
+
+
+class TriviaQuestion(models.Model):
+    CORRECT_CHOICES = [("a", "A"), ("b", "B"), ("c", "C")]
+
+    text = models.CharField(max_length=300)
+    image = models.ImageField(upload_to="trivia/", blank=True, null=True)
+    image_alt = models.CharField(max_length=200, blank=True, default="")
+    option_a = models.CharField(max_length=120)
+    option_b = models.CharField(max_length=120)
+    option_c = models.CharField(max_length=120)
+    correct = models.CharField(max_length=1, choices=CORRECT_CHOICES)
+    campaigns = models.ManyToManyField(
+        "Campaign", related_name="trivia_questions", blank=True,
+    )
+    is_active = models.BooleanField(default=True)
+    display_order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("display_order", "id")
+
+    def __str__(self):
+        return (self.text[:77] + "...") if len(self.text) > 80 else self.text
