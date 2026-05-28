@@ -64,3 +64,72 @@ class CampaignManagersGroupTriviaPermsTests(TestCase):
         codes = set(grp.permissions.values_list("codename", flat=True))
         for action in ("view", "add", "change", "delete"):
             self.assertIn(f"{action}_triviaquestion", codes)
+
+
+from django.contrib.admin.sites import site as admin_site
+
+
+class TriviaQuestionAdminScopingTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.mgr_hn = User.objects.create_user(
+            username="mgr_hn", password="x", is_staff=True,
+        )
+        cls.mgr_gt = User.objects.create_user(
+            username="mgr_gt", password="x", is_staff=True,
+        )
+        cls.superuser = User.objects.create_superuser(
+            username="root", password="x",
+        )
+        cls.hn = _campaign(slug="hn", manager=cls.mgr_hn)
+        cls.gt = _campaign(slug="gt", manager=cls.mgr_gt)
+        cls.q_hn = TriviaQuestion.objects.create(
+            text="HN only", option_a="A", option_b="B", option_c="C", correct="a",
+        )
+        cls.q_hn.campaigns.add(cls.hn)
+        cls.q_gt = TriviaQuestion.objects.create(
+            text="GT only", option_a="A", option_b="B", option_c="C", correct="b",
+        )
+        cls.q_gt.campaigns.add(cls.gt)
+        cls.q_both = TriviaQuestion.objects.create(
+            text="Both", option_a="A", option_b="B", option_c="C", correct="c",
+        )
+        cls.q_both.campaigns.add(cls.hn, cls.gt)
+
+    def _admin(self):
+        return admin_site._registry[TriviaQuestion]
+
+    def _request(self, user):
+        from django.test import RequestFactory
+        rf = RequestFactory()
+        req = rf.get("/admin/campaigns/triviaquestion/")
+        req.user = user
+        return req
+
+    def test_hn_manager_sees_hn_and_both(self):
+        qs = self._admin().get_queryset(self._request(self.mgr_hn))
+        ids = set(qs.values_list("id", flat=True))
+        self.assertEqual(ids, {self.q_hn.id, self.q_both.id})
+
+    def test_gt_manager_sees_gt_and_both(self):
+        qs = self._admin().get_queryset(self._request(self.mgr_gt))
+        ids = set(qs.values_list("id", flat=True))
+        self.assertEqual(ids, {self.q_gt.id, self.q_both.id})
+
+    def test_superuser_sees_all(self):
+        qs = self._admin().get_queryset(self._request(self.superuser))
+        ids = set(qs.values_list("id", flat=True))
+        self.assertEqual(ids, {self.q_hn.id, self.q_gt.id, self.q_both.id})
+
+    def test_hn_manager_cannot_change_gt_only_question(self):
+        admin = self._admin()
+        req = self._request(self.mgr_hn)
+        self.assertFalse(admin.has_change_permission(req, obj=self.q_gt))
+        self.assertTrue(admin.has_change_permission(req, obj=self.q_hn))
+        self.assertTrue(admin.has_change_permission(req, obj=self.q_both))
+
+    def test_hn_manager_cannot_delete_gt_only_question(self):
+        admin = self._admin()
+        req = self._request(self.mgr_hn)
+        self.assertFalse(admin.has_delete_permission(req, obj=self.q_gt))
+        self.assertTrue(admin.has_delete_permission(req, obj=self.q_hn))

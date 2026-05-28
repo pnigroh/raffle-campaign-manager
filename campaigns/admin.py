@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.urls import reverse
 from unfold.admin import ModelAdmin, TabularInline
-from .models import Campaign, Domain, Prize, SubmissionCode, Submission, Raffle, RaffleWinner, Store, Theme
+from .models import Campaign, Domain, Prize, SubmissionCode, Submission, Raffle, RaffleWinner, Store, Theme, TriviaQuestion
 from .schema_validator import validate_form_schema
 
 
@@ -463,6 +463,67 @@ class ThemeAdmin(ModelAdmin):
         bundle = form.cleaned_data.get("bundle")
         if bundle:
             extract_bundle(bundle, obj)
+
+
+@admin.register(TriviaQuestion)
+class TriviaQuestionAdmin(ModelAdmin):
+    """Admin for the trivia question bank.
+
+    Not using CampaignScopedAdminMixin because that mixin assumes an FK
+    to Campaign; TriviaQuestion uses an M2M. We re-implement the three
+    scoping methods directly against _user_managed_campaign_ids.
+    """
+
+    list_display = ("text_short", "correct_display", "image_thumb", "campaign_count", "is_active", "display_order")
+    list_filter = ("is_active", "campaigns")
+    search_fields = ("text", "option_a", "option_b", "option_c")
+    filter_horizontal = ("campaigns",)
+    ordering = ("display_order", "id")
+    fieldsets = (
+        ("Question", {"fields": ("text", "image", "image_alt", "is_active", "display_order")}),
+        ("Options", {"fields": ("option_a", "option_b", "option_c", "correct")}),
+        ("Assignment", {"fields": ("campaigns",)}),
+    )
+
+    def text_short(self, obj):
+        return (obj.text[:60] + "...") if len(obj.text) > 60 else obj.text
+    text_short.short_description = "Question"
+
+    def correct_display(self, obj):
+        return f"{obj.correct.upper()}: {getattr(obj, f'option_{obj.correct}')}"
+    correct_display.short_description = "Correct answer"
+
+    def image_thumb(self, obj):
+        if obj.image:
+            return format_html(
+                '<img src="{}" style="height:36px; border-radius:6px; object-fit:cover;" />',
+                obj.image.url,
+            )
+        return "—"
+    image_thumb.short_description = "Image"
+
+    def campaign_count(self, obj):
+        return obj.campaigns.count()
+    campaign_count.short_description = "Campaigns"
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        ids = _user_managed_campaign_ids(request)
+        if ids is None:
+            return qs
+        return qs.filter(campaigns__id__in=ids).distinct()
+
+    def has_change_permission(self, request, obj=None):
+        if obj is None or request.user.is_superuser:
+            return super().has_change_permission(request, obj)
+        ids = _user_managed_campaign_ids(request)
+        return obj.campaigns.filter(id__in=ids).exists()
+
+    def has_delete_permission(self, request, obj=None):
+        if obj is None or request.user.is_superuser:
+            return super().has_delete_permission(request, obj)
+        ids = _user_managed_campaign_ids(request)
+        return obj.campaigns.filter(id__in=ids).exists()
 
 
 # ============================================================
